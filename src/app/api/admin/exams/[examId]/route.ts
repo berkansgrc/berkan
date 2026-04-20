@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 // 1. SINAVI VE SORULARI GÜNCELLE
 export async function PUT(
   request: Request,
-  { params }: { params: { examId: string } }
+  { params }: { params: Promise<{ examId: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -88,7 +88,7 @@ export async function PUT(
 // 2. SINAVI SİL
 export async function DELETE(
   request: Request,
-  { params }: { params: { examId: string } }
+  { params }: { params: Promise<{ examId: string }> }
 ) {
   try {
     const supabase = await createClient();

@@ -9,7 +9,7 @@ export const metadata = {
 export default async function ExamEditPage({
   params,
 }: {
-  params: { examId: string };
+  params: Promise<{ examId: string }>;
 }) {
   const { examId } = await params;
   const supabase = await createClient();
