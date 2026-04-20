@@ -169,7 +169,7 @@ export default function ContentManager({
 
       {/* Konu Ekleme Formu */}
       <form
-        action={createTopicForGrade}
+        action={async (formData) => { await createTopicForGrade(formData); }}
         className="rounded-[1.25rem] border border-primary/20 bg-primary/5 p-5 flex flex-col sm:flex-row items-end gap-4 shadow-sm"
       >
         <input type="hidden" name="grade_slug" value={activeGrade} />
