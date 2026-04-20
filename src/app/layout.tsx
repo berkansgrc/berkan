@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Manrope } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import "@/env"; // Çevre değişkenlerini başlangıçta doğrula
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-heading",

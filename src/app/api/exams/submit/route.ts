@@ -1,7 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { checkRateLimit, getClientIP } from "@/lib/ratelimit";
 
 export async function POST(req: NextRequest) {
+  // ─── Rate Limit: 1 dakikada en fazla 3 sınav gönderimi ───
+  const ip = getClientIP(req);
+  const rateCheck = await checkRateLimit(ip, "exam_submit", {
+    maxRequests: 3,
+    windowMs: 60_000, // 1 dakika
+  });
+
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      {
+        error: "Çok fazla istek gönderdiniz. Lütfen biraz bekleyin.",
+        retryAfter: Math.ceil((rateCheck.resetAt.getTime() - Date.now()) / 1000),
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rateCheck.resetAt.getTime() - Date.now()) / 1000)),
+          "X-RateLimit-Remaining": "0",
+        },
+      }
+    );
+  }
+
   const { resultId, answers, examId } = await req.json();
 
   if (!resultId || !examId) {

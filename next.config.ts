@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   compress: true,
@@ -22,4 +23,13 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Sentry entegrasyonu — DSN yoksa sessizce devre dışı kalır
+export default withSentryConfig(nextConfig, {
+  // Source map'leri Sentry'ye yükle (hata izleme için)
+  silent: true,
+
+  // Source map'leri gizle
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+});
