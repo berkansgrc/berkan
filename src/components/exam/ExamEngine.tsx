@@ -62,6 +62,7 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
   const handleSelect = useCallback((questionId: string, label: string) => {
     setAnswers((prev) => {
       const newAnswers = { ...prev, [questionId]: label };
+      answersRef.current = newAnswers; // Synchronize ref immediately
       return newAnswers;
     });
   }, []);
