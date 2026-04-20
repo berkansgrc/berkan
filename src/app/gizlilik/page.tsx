@@ -174,7 +174,7 @@ export default function GizlilikPage() {
             </p>
             <div className="mt-4 p-4 bg-muted/40 rounded-xl">
               <p className="font-heading font-bold text-foreground">Berkan Matematik</p>
-              <p className="text-muted-foreground text-sm mt-1">E-posta: iletisim@berkanmatematik.com</p>
+              <p className="text-muted-foreground text-sm mt-1">E-posta: <a href="mailto:berkan_1225@hotmail.com" className="text-primary hover:underline font-semibold">berkan_1225@hotmail.com</a></p>
             </div>
           </section>
 
