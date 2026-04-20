@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { Radio, Users, Calendar, ArrowRight, Lock, Bell, Play, Wifi, WifiOff } from "lucide-react";
+import { getCachedUser } from "@/utils/supabase/queries";
 
 export const metadata = {
   title: "Canlı Dersler | Berkan Matematik",
@@ -9,27 +10,21 @@ export const metadata = {
 
 export const revalidate = 60;
 
-async function getLiveStreamConfig() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("live_stream_config")
-    .select("*")
-    .single();
-  return data;
-}
-
 export default async function CanliDersPage() {
+  // getCachedUser + live_stream_config paralel çal›ş›r — seri değil
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const [user, { data: config }] = await Promise.all([
+    getCachedUser(),
+    supabase.from("live_stream_config").select("*").single(),
+  ]);
 
-  // Canlı ders konfigürasyonunu al (yoksa null döner)
-  const config = await getLiveStreamConfig();
   const isLive = config?.is_live ?? false;
   const youtubeId = config?.youtube_video_id ?? null;
   const lessonTitle = config?.lesson_title ?? "Canlı Ders";
   const lessonDescription = config?.lesson_description ?? "Yakında canlı ders başlayacak.";
   const viewerCount = config?.viewer_count ?? 0;
   const scheduledAt = config?.scheduled_at ? new Date(config.scheduled_at) : null;
+
 
   return (
     <div className="relative min-h-[calc(100vh-4.5rem)] bg-background overflow-hidden">

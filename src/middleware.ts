@@ -8,8 +8,12 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Statik dosyalar, _next ve favicon hariç her rotaya uygula.
+     * Sadece korumalı rotalarda çalıştır:
+     * /dashboard ve /admin — public sayfalar middleware'den geçmez.
+     * Bu sayede ana sayfa, sınavlar, sınıf sayfaları vb.
+     * her yüklenişte gereksiz Supabase isteği atmaz (~200ms/istek tasarruf).
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/dashboard/:path*",
+    "/admin/:path*",
   ],
 };

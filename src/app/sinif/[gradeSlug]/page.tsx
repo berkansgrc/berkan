@@ -4,7 +4,7 @@ import Link from "next/link";
 import LessonViewer from "@/components/lesson/LessonViewer";
 import { ArrowLeft, BookOpen } from "lucide-react";
 
-export const revalidate = 120;
+export const revalidate = 300; // 5 dakikada bir yenile
 
 const GRADES = [
   { label: "5. Sınıf", value: "5-sinif" },
@@ -16,6 +16,12 @@ const GRADES = [
   { label: "11. Sınıf", value: "11-sinif" },
   { label: "TYT-AYT", value: "tyt-ayt" },
 ];
+
+/** Build anında tüm sınıf sayfalarını statik üret — CDN'den sıfır TTFB */
+export async function generateStaticParams() {
+  return GRADES.map((g) => ({ gradeSlug: g.value }));
+}
+
 
 export async function generateMetadata({ params }: { params: Promise<{ gradeSlug: string }> }) {
   const { gradeSlug } = await params;

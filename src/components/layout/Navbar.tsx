@@ -1,20 +1,12 @@
-import { createClient } from "@/utils/supabase/server";
 import { NavbarClient } from "./NavbarClient";
+import { getCachedUser, getCachedProfile } from "@/utils/supabase/queries";
 
 export async function Navbar() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
   let role: string | null = null;
-
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    const profile = await getCachedProfile(user.id);
     role = profile?.role ?? null;
   }
 

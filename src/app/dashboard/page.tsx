@@ -1,4 +1,5 @@
 import { BookOpen, Trophy, Clock, Target, ArrowRight, Play, CheckCircle2 } from "lucide-react";
+import { getCachedUser, getCachedProfile } from "@/utils/supabase/queries";
 import { createClient } from "@/utils/supabase/server";
 
 export const metadata = {
@@ -10,21 +11,17 @@ export const metadata = {
 export const revalidate = 30;
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  // getCachedUser, Navbar ile aynı istek — sıfır ekstra DB çağrısı
+  const user = await getCachedUser();
   if (!user) return null;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, full_name")
-    .eq("id", user.id)
-    .single();
-
+  // getCachedProfile, Navbar ile aynı profile — sıfır ekstra DB çağrısı
+  const profile = await getCachedProfile(user.id);
   const firstName = profile?.full_name?.split(" ")[0] || "Öğrenci";
 
   // ===================== YÖNETİCİ PANELİ =====================
   if (profile?.role === "admin") {
+    const supabase = await createClient();
     const [{ count: totalStudents }, { count: totalExams }] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "student"),
       supabase.from("exams").select("*", { count: "exact", head: true }),
@@ -69,6 +66,7 @@ export default async function DashboardPage() {
 
 
   // ===================== ÖĞRENCİ PANELİ =====================
+  const supabase = await createClient();
   const { data: studentResults } = await supabase
     .from("exam_results")
     .select("score, correct, wrong")
