@@ -42,8 +42,8 @@ export function Footer() {
             <div className="space-y-4">
               <p className="text-foreground/50">Yasal</p>
               <ul className="space-y-3">
-                <li><Link className="hover:text-primary transition-colors" href="#">Gizlilik</Link></li>
-                <li><Link className="hover:text-primary transition-colors" href="#">Şartlar</Link></li>
+                <li><Link className="hover:text-primary transition-colors" href="/gizlilik">Gizlilik</Link></li>
+                <li><Link className="hover:text-primary transition-colors" href="/kullanim-sartlari">Şartlar</Link></li>
               </ul>
             </div>
             <div className="space-y-4">
