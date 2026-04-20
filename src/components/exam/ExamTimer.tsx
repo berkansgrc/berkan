@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AlertTriangle } from "lucide-react";
 
 type Props = {
@@ -11,27 +11,28 @@ type Props = {
 export default function ExamTimer({ durationMinutes, onTimeUp }: Props) {
   const [seconds, setSeconds] = useState(durationMinutes * 60);
 
-  const handleTimeUp = useCallback(() => {
-    onTimeUp();
+  const onTimeUpRef = useRef(onTimeUp);
+  useEffect(() => {
+    onTimeUpRef.current = onTimeUp;
   }, [onTimeUp]);
 
   useEffect(() => {
     if (seconds <= 0) {
-      handleTimeUp();
+      onTimeUpRef.current();
       return;
     }
     const interval = setInterval(() => {
       setSeconds((s) => {
         if (s <= 1) {
           clearInterval(interval);
-          handleTimeUp();
+          onTimeUpRef.current();
           return 0;
         }
         return s - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [handleTimeUp]); // seconds'u bağımlılığa koymuyoruz, sadece mount'ta başlıyor
+  }, []); // Bağımlılık dizisi boş, timer asla sıfırlanmaz
 
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;

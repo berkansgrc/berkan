@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ExamTimer from "@/components/exam/ExamTimer";
 import QuestionCard from "@/components/exam/QuestionCard";
@@ -38,15 +38,32 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
     }
     return {};
   });
+  const answersRef = useRef(answers);
   const [submitting, setSubmitting] = useState(false);
 
   // localStorage'a ara kayıt
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(answers));
+    answersRef.current = answers;
   }, [answers, storageKey]);
 
+  // Arka planda periyodik kaydetme (Heartbeat) - 30 saniyede bir
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch("/api/exams/save-progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resultId, answers: answersRef.current }),
+      }).catch(err => console.error("Auto-save failed", err));
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [resultId]);
+
   const handleSelect = useCallback((questionId: string, label: string) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: label }));
+    setAnswers((prev) => {
+      const newAnswers = { ...prev, [questionId]: label };
+      return newAnswers;
+    });
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -57,17 +74,21 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
       const res = await fetch("/api/exams/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resultId, answers, examId: exam.id }),
+        body: JSON.stringify({ resultId, answers: answersRef.current, examId: exam.id }),
       });
 
       if (res.ok) {
         localStorage.removeItem(storageKey);
         router.push(`/exams/result/${resultId}`);
+      } else {
+        alert("Sınav gönderilirken bir sorun oluştu. Lütfen bağlantınızı kontrol edip tekrar deneyin.");
+        setSubmitting(false);
       }
     } catch {
+      alert("Ağ bağlantısı hatası! Lütfen internet bağlantınızı kontrol edip tekrar deneyin.");
       setSubmitting(false);
     }
-  }, [submitting, answers, resultId, exam.id, storageKey, router]);
+  }, [submitting, resultId, exam.id, storageKey, router]);
 
   const answeredCount = questions.filter((q) => answers[q.id]).length;
   const question = questions[current];
