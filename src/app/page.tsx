@@ -3,15 +3,18 @@ import { ArrowRight, ArrowLeft, DraftingCompass, Globe, Infinity, Layers, Layout
 import Link from "next/link";
 import Image from "next/image";
 
+// Ana sayfa tamamen statik — CDN'den 1 saat cache
+export const revalidate = 3600;
+
 export default function Home() {
   return (
     <div className="relative flex flex-col items-center w-full min-h-screen bg-surface text-on-surface overflow-x-hidden">
       
       {/* Animated Background Elements */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-container/30 animate-blob organic-blob blur-3xl"></div>
-        <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-secondary/30 animate-blob [animation-delay:2000ms] organic-blob blur-3xl"></div>
-        <div className="absolute top-[40%] left-[20%] w-[20%] h-[20%] bg-chart-2/10 animate-blob [animation-delay:4000ms] organic-blob blur-2xl"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-container/30 animate-blob organic-blob blur-3xl" style={{ willChange: 'transform' }}></div>
+        <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-secondary/30 animate-blob [animation-delay:2000ms] organic-blob blur-3xl" style={{ willChange: 'transform' }}></div>
+        <div className="absolute top-[40%] left-[20%] w-[20%] h-[20%] bg-chart-2/10 animate-blob [animation-delay:4000ms] organic-blob blur-2xl" style={{ willChange: 'transform' }}></div>
       </div>
 
       <main className="relative z-10 pt-32 md:pt-40 px-6 lg:px-20 w-full max-w-7xl mx-auto flex-1">
@@ -52,10 +55,13 @@ export default function Home() {
             <div className="absolute -top-12 -left-12 w-32 h-32 bg-chart-2/20 organic-blob animate-spin-slow -z-10"></div>
             <div className="relative z-10 p-4 bg-white/40 backdrop-blur-xl rounded-[3rem] border border-white/60 shadow-2xl overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-secondary/10 pointer-events-none"></div>
-              <img 
+              <Image 
                 alt="Abstract geometric visualization" 
                 className="rounded-[2.5rem] w-full aspect-square object-cover transition-transform duration-700 group-hover:scale-110" 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuHSoqXYCYpt85ujOjDSHANG8rR4EaQoJU8vzhrL5NN7GhttbiJmsddCgxengLuTjeMGHgJxdu2Lp5Cu58oss4ksJVoFYGN6daRLewZo19TfKqDMNqiw7B1wXrAvOwFX0ncHQVLBl_5_xXdz6Eb5uUcQnfPLi0sT2HFMHUaY5YE8ZEdiv68egGR_J3aZVdL4O42g3Q0siphCLFrin1m8G8sneLVg7vQ-NaCUCNYc-JWoaSQJtAhVSymO-lSFmD13_SF87FAW47Kmk"
+                width={600}
+                height={600}
+                priority
               />
               <div className="absolute bottom-10 left-10 right-10 p-6 glass-card rounded-2xl transform translate-y-20 group-hover:translate-y-0 transition-transform duration-500">
                 <p className="text-sm font-bold opacity-60 uppercase tracking-widest text-primary">Aktif Simülasyon</p>
@@ -106,10 +112,12 @@ export default function Home() {
                   </Link>
                 </div>
                 <div className="w-72 h-72 organic-blob overflow-hidden bg-primary shadow-2xl relative">
-                  <img 
+                  <Image 
                     alt="Class interaction" 
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYd4E-lW21uV5M6gnTz8_6EQuJHfQNBiIMfZW5rim5rzomZs4U_D2VsS2jTS5ZtAAtRfTQjYak05LY8yT4Ctr3QgE609lt7kUDIQmtIhxGmEyLgnboh0N5Xxhv57WeLtn9AFZBkXmStv7kR0FjXHXeRmlTxthC7X7e09CFimafjpfmiCvDZMQMUdxC8RpVKZ3osQ3k8yYT4h5dNgmxkTmKBEUkaapDgheE8ydZQtZo_Kqw21bozADoZ7XECOiCDYsi9KUpk5qHrxI"
+                    width={288}
+                    height={288}
                   />
                   <div className="absolute inset-0 bg-primary/20 mix-blend-overlay"></div>
                 </div>

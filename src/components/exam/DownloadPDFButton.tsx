@@ -23,8 +23,8 @@ type Props = {
 };
 
 export default function DownloadPDFButton(props: Props) {
-  const handleDownload = () => {
-    generateResultPDF(props);
+  const handleDownload = async () => {
+    await generateResultPDF(props);
   };
 
   return (

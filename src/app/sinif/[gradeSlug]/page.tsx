@@ -44,18 +44,16 @@ export default async function GradePage({ params }: { params: Promise<{ gradeSlu
   let topics: any[] = [];
   let contents: any[] = [];
 
-  // If a course exists, fetch its topics
   if (course) {
     const { data: fetchedTopics } = await supabase
       .from("topics")
       .select("*")
       .eq("course_id", course.id)
       .order("sort_order");
-    
-    topics = fetchedTopics ?? [];
 
-    // If topics exist, fetch their contents
-    const topicIds = topics.map(t => t.id);
+    topics = fetchedTopics ?? [];
+    const topicIds = topics.map((t) => t.id);
+
     if (topicIds.length > 0) {
       const { data } = await supabase
         .from("contents")
@@ -66,6 +64,7 @@ export default async function GradePage({ params }: { params: Promise<{ gradeSlu
       contents = data ?? [];
     }
   }
+
 
   return (
     <div className="relative min-h-[calc(100vh-4.5rem)] w-full pb-20 bg-background overflow-x-hidden">

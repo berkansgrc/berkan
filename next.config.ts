@@ -13,7 +13,12 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     // Lucide-react ve diğer büyük paketlerin sadece kullanılan ikonları yüklemesi
-    optimizePackageImports: ["lucide-react", "@supabase/supabase-js"],
+    optimizePackageImports: [
+        "lucide-react",
+        "@supabase/supabase-js",
+        "@supabase/ssr",
+        "@base-ui/react",
+      ],
   },
 };
 

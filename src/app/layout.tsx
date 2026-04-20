@@ -7,11 +7,15 @@ import { Footer } from "@/components/layout/Footer";
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-heading",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 const manrope = Manrope({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {

@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+// jsPDF'i lazy yükle — sadece kullanıcı indirme butonuna bastığında bundle'a dahil olsun (~500KB tasarruf)
 
 type ResultData = {
   studentName: string;
@@ -18,7 +18,8 @@ type ResultData = {
   }[];
 };
 
-export function generateResultPDF(data: ResultData) {
+export async function generateResultPDF(data: ResultData) {
+  const { default: jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const margin = 15;
   let y = margin;
