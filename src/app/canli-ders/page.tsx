@@ -24,6 +24,7 @@ export default async function CanliDersPage() {
   const lessonDescription = config?.lesson_description ?? "Yakında canlı ders başlayacak.";
   const viewerCount = config?.viewer_count ?? 0;
   const scheduledAt = config?.scheduled_at ? new Date(config.scheduled_at) : null;
+  const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "Öğrenci";
 
 
   return (

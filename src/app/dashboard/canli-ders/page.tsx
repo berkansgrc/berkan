@@ -2,6 +2,8 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Radio, Wifi, WifiOff, Users, MessageSquare, Pencil, ArrowLeft, Bell, Play, BookOpen } from "lucide-react";
+import LivePollWidget from "@/components/live/LivePollWidget";
+import LiveQuestionQueue from "@/components/live/LiveQuestionQueue";
 
 export const metadata = {
   title: "Canlı Dersim | Berkan Matematik",
@@ -106,7 +108,7 @@ export default async function DashboardCanliDersPage() {
                 </div>
               )}
               {isLive && (
-                <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-600 text-white text-xs font-black uppercase px-3 py-1.5 rounded-full">
+                <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-600 text-white text-xs font-black uppercase px-3 py-1.5 rounded-full z-20">
                   <span className="w-2 h-2 rounded-full bg-white animate-ping" />
                   CANLI
                 </div>
@@ -141,27 +143,28 @@ export default async function DashboardCanliDersPage() {
           {/* Sidebar */}
           <div className="space-y-6">
 
+            {/* Canlı Anket Widget */}
+            <LivePollWidget userId={user.id} />
+
+            {/* Soru Kuyruğu */}
+            <LiveQuestionQueue
+              userId={user.id}
+              isTeacher={profile?.role === "teacher" || profile?.role === "admin"}
+            />
+
             {/* Live Chat — YouTube Chat embed */}
-            {isLive && chatVideoId ? (
+            {isLive && chatVideoId && (
               <div className="rounded-[1.5rem] overflow-hidden border border-border/50 bg-card/60 shadow-sm">
                 <div className="px-5 py-4 border-b border-border/50 flex items-center gap-2">
                   <MessageSquare className="w-4 h-4 text-primary" />
-                  <h3 className="font-heading font-black text-foreground text-sm">Canlı Sohbet</h3>
+                  <h3 className="font-heading font-black text-foreground text-sm">YouTube Sohbet</h3>
                 </div>
                 <iframe
                   src={`https://www.youtube.com/live_chat?v=${chatVideoId}&embed_domain=${process.env.NEXT_PUBLIC_SITE_DOMAIN || "localhost"}`}
                   title="Canlı Sohbet"
-                  className="w-full h-[480px]"
+                  className="w-full h-[360px]"
                   allow="clipboard-write"
                 />
-              </div>
-            ) : (
-              <div className="rounded-[1.5rem] border border-border/50 bg-card/60 p-6 text-center">
-                <div className="w-12 h-12 mx-auto rounded-full bg-muted flex items-center justify-center mb-3">
-                  <MessageSquare className="w-6 h-6 text-muted-foreground" />
-                </div>
-                <p className="font-heading font-bold text-foreground text-sm">Sohbet Pasif</p>
-                <p className="text-xs text-muted-foreground mt-1">Ders başlayınca sohbet etkinleşecek.</p>
               </div>
             )}
 

@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Clock, Globe, Lock, Users, ArrowLeft, Play, LayoutGrid } from "lucide-react";
+import GuestAccessForm from "@/components/exam/GuestAccessForm";
 
 type Props = {
   params: Promise<{ examId: string }>;
@@ -23,6 +24,8 @@ export default async function ExamDetailPage({ params }: Props) {
     .from("questions")
     .select("*", { count: "exact", head: true })
     .eq("exam_id", examId);
+
+  const { data: { user } } = await supabase.auth.getUser();
 
   const isPublic = exam.access_mode === "public";
 
@@ -95,20 +98,24 @@ export default async function ExamDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {/* Action Button */}
-              <div className="w-full pt-4">
-                  <Link href={`/exams/${exam.id}/take`} className="block w-full">
-                    <button className="w-full group relative overflow-hidden bg-gradient-to-br from-primary to-[#005a55] text-primary-foreground font-heading font-extrabold text-xl h-16 rounded-[1.5rem] shadow-[0_12px_24px_rgba(0,103,98,0.25)] hover:shadow-[0_20px_40px_rgba(0,103,98,0.35)] hover:-translate-y-1 transition-all flex items-center justify-center gap-3 border-0">
-                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none"></div>
-                      <span className="relative z-10">Sınava Başla</span>
-                      <Play className="ml-1 h-6 w-6 fill-primary-foreground relative z-10 group-hover:scale-110 transition-transform" />
-                    </button>
-                  </Link>
+              {/* Action Button Section */}
+              {user ? (
+                <div className="w-full pt-4">
+                    <Link href={`/exams/${exam.id}/take`} className="block w-full">
+                      <button className="w-full group relative overflow-hidden bg-gradient-to-br from-primary to-[#005a55] text-primary-foreground font-heading font-extrabold text-xl h-16 rounded-[1.5rem] shadow-[0_12px_24px_rgba(0,103,98,0.25)] hover:shadow-[0_20px_40px_rgba(0,103,98,0.35)] hover:-translate-y-1 transition-all flex items-center justify-center gap-3 border-0">
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none"></div>
+                        <span className="relative z-10">Sınava Başla</span>
+                        <Play className="ml-1 h-6 w-6 fill-primary-foreground relative z-10 group-hover:scale-110 transition-transform" />
+                      </button>
+                    </Link>
 
-                  <p className="text-sm text-center text-muted-foreground font-medium mt-6 bg-input/30 py-3 rounded-xl border border-border/50 inline-block px-6">
-                    Sınava başladığınızda süre geriye saymaya başlar. Süre bittiğinde otomatik testim edilir.
-                  </p>
-              </div>
+                    <p className="text-sm text-center text-muted-foreground font-medium mt-6 bg-input/30 py-3 rounded-xl border border-border/50 inline-block px-6">
+                      Sınava başladığınızda süre geriye saymaya başlar. Süre bittiğinde otomatik teslim edilir.
+                    </p>
+                </div>
+              ) : (
+                 <GuestAccessForm examId={exam.id} expectedCode={exam.share_code || ""} />
+              )}
 
           </div>
         </div>

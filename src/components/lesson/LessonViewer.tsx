@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import {
   Video,
   FileText,
@@ -11,7 +17,12 @@ import {
   ChevronDown,
   BookOpen,
   AlertTriangle,
+  Search,
+  X,
+  MessageCircleQuestion,
+  GraduationCap
 } from "lucide-react";
+import StudentQuizModal from "./StudentQuizModal";
 
 interface Topic {
   id: string;
@@ -23,6 +34,8 @@ interface ContentItem {
   topic_id: string;
   title: string;
   description: string | null;
+  description_rich?: string | null;
+  thumbnail_url?: string | null;
   video_url: string | null;
   drive_file_url: string | null;
   app_url: string | null;
@@ -75,7 +88,8 @@ export default function LessonViewer({
   );
   const [iframeError, setIframeError] = useState(false);
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set(topics.map(t => t.id))); // Tüm konular başlangıçta açık
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
 
   const selectContent = (content: ContentItem) => {
     setSelectedContent(content);
@@ -135,8 +149,16 @@ export default function LessonViewer({
             )}
 
             {/* İçerik Embed Alanı */}
-            <div className="rounded-[1.75rem] border border-border/50 bg-card/60 backdrop-blur-xl overflow-hidden shadow-xl">
-              {/* Video Tab */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab + (selectedContent?.id || "empty")}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="rounded-[1.75rem] border border-border/50 bg-card/60 backdrop-blur-xl overflow-hidden shadow-xl"
+              >
+                {/* Video Tab */}
               {activeTab === "video" && youtubeId && (
                 <div className="aspect-video w-full bg-black">
                   <iframe
@@ -222,19 +244,92 @@ export default function LessonViewer({
                   </p>
                 </div>
               )}
-            </div>
+              </motion.div>
+            </AnimatePresence>
 
             {/* İçerik Bilgisi */}
-            <div className="rounded-[1.5rem] border border-border/50 bg-card/60 backdrop-blur-xl p-6">
-              <h2 className="font-heading font-extrabold text-xl text-foreground mb-2">
+            <div className="rounded-[1.5rem] border border-border/50 bg-card/60 backdrop-blur-xl p-6 shadow-sm">
+              <h2 className="font-heading font-extrabold text-xl text-foreground mb-4">
                 {selectedContent.title}
               </h2>
-              {selectedContent.description && (
-                <p className="text-muted-foreground text-sm font-medium leading-relaxed">
-                  {selectedContent.description}
-                </p>
+              
+              {/* Rich Text / Markdown Description */}
+              {(selectedContent.description_rich || selectedContent.description) && (
+                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground marker:text-primary prose-headings:font-heading prose-headings:font-bold prose-a:text-primary hover:prose-a:text-primary/80 prose-img:rounded-xl">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm, remarkMath]} 
+                    rehypePlugins={[rehypeKatex]}
+                  >
+                    {selectedContent.description_rich || selectedContent.description || ""}
+                  </ReactMarkdown>
+                </div>
               )}
+              
+              {/* Yeni Eklenen Etkileşimli Araçlar (Placeholder) */}
+              <div className="mt-8 pt-6 border-t border-border/40 grid grid-cols-1 gap-4">
+                <button 
+                  onClick={() => setIsQuizModalOpen(true)}
+                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold hover:bg-orange-500/20 transition-colors shadow-sm"
+                >
+                   <GraduationCap className="w-5 h-5" />
+                   Mini Teste Başla
+                </button>
+              </div>
             </div>
+
+            {/* Önceki / Sonraki Ders Navigasyonu */}
+            {(() => {
+              const currentIndex = contents.findIndex(c => c.id === selectedContent.id);
+              const prevContent = currentIndex > 0 ? contents[currentIndex - 1] : null;
+              const nextContent = currentIndex < contents.length - 1 ? contents[currentIndex + 1] : null;
+              const getTopicName = (topicId: string) => topics.find(t => t.id === topicId)?.name ?? "";
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Önceki */}
+                  {prevContent ? (
+                    <button
+                      onClick={() => selectContent(prevContent)}
+                      className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl p-4 text-left hover:bg-primary/5 hover:border-primary/30 transition-all"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-muted/40 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                        <ChevronRight className="w-5 h-5 text-muted-foreground rotate-180 group-hover:text-primary transition-colors" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Önceki Ders</p>
+                        <p className="text-sm font-heading font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
+                          {prevContent.title}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground truncate">{getTopicName(prevContent.topic_id)}</p>
+                      </div>
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+
+                  {/* Sonraki */}
+                  {nextContent ? (
+                    <button
+                      onClick={() => selectContent(nextContent)}
+                      className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl p-4 text-left hover:bg-primary/5 hover:border-primary/30 transition-all"
+                    >
+                      <div className="min-w-0 flex-1 text-right">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Sonraki Ders</p>
+                        <p className="text-sm font-heading font-extrabold text-foreground truncate group-hover:text-primary transition-colors">
+                          {nextContent.title}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground truncate">{getTopicName(nextContent.topic_id)}</p>
+                      </div>
+                      <div className="w-10 h-10 rounded-xl bg-muted/40 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+                </div>
+              );
+            })()}
           </>
         ) : (
           <div className="aspect-video w-full rounded-[1.75rem] border border-border/50 bg-card/60 backdrop-blur-xl flex flex-col items-center justify-center text-muted-foreground shadow-sm">
@@ -251,10 +346,54 @@ export default function LessonViewer({
           {courseName} Müfredatı
         </h3>
 
+        {/* Arama Çubuğu */}
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Konu veya materyal ara…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-10 py-3 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
+            >
+              <X className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+
         <div className="rounded-[1.5rem] border border-border/50 bg-card/60 backdrop-blur-xl overflow-hidden shadow-sm divide-y divide-border/30">
-          {topics.map((topic, topicIdx) => {
-            const topicContents = contents.filter(c => c.topic_id === topic.id);
-            const isExpanded = expandedTopics.has(topic.id);
+          {(() => {
+            const q = searchQuery.toLowerCase().trim();
+            const filteredTopics = q
+              ? topics.filter(topic => {
+                  const topicMatch = topic.name.toLowerCase().includes(q);
+                  const contentMatch = contents.some(c => c.topic_id === topic.id && c.title.toLowerCase().includes(q));
+                  return topicMatch || contentMatch;
+                })
+              : topics;
+
+            if (q && filteredTopics.length === 0) {
+              return (
+                <div className="px-5 py-8 text-center">
+                  <Search className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm font-heading font-bold text-muted-foreground">
+                    &ldquo;{searchQuery}&rdquo; ile eşleşen sonuç bulunamadı.
+                  </p>
+                </div>
+              );
+            }
+
+            return filteredTopics.map((topic, topicIdx) => {
+            const allTopicContents = contents.filter(c => c.topic_id === topic.id);
+            const topicContents = q
+              ? allTopicContents.filter(c => c.title.toLowerCase().includes(q) || topic.name.toLowerCase().includes(q))
+              : allTopicContents;
+            const isExpanded = q ? true : expandedTopics.has(topic.id);
 
             return (
                <div key={topic.id} className="flex flex-col">
@@ -284,48 +423,76 @@ export default function LessonViewer({
                   </button>
 
                   {/* Contents inside Topic */}
-                  {isExpanded && (
-                     <div className="flex flex-col divide-y divide-border/20 border-t border-border/20 bg-background/50">
-                        {topicContents.map((content, idx) => {
-                          const isSelected = selectedContent?.id === content.id;
-                          return (
-                            <button
-                              key={content.id}
-                              onClick={() => selectContent(content)}
-                              className={`w-full text-left flex items-center gap-3 px-5 py-3 transition-colors ${
-                                isSelected
-                                  ? "bg-primary/5 border-l-2 border-primary"
-                                  : "hover:bg-muted/20 border-l-2 border-transparent"
-                              }`}
-                            >
-                              <div className="flex flex-col flex-1 min-w-0 pl-2">
-                                <p className={`font-heading font-extrabold text-[13px] truncate ${
-                                  isSelected ? "text-primary" : "text-foreground/80"
-                                }`}>
-                                  {content.title}
-                                </p>
-                                <div className="flex items-center gap-2 mt-1">
-                                  {content.video_url && <Video className={`w-3 h-3 ${isSelected ? "text-red-500" : "text-muted-foreground"}`} />}
-                                  {content.drive_file_url && <FileText className={`w-3 h-3 ${isSelected ? "text-blue-500" : "text-muted-foreground"}`} />}
-                                  {content.app_url && <AppWindow className={`w-3 h-3 ${isSelected ? "text-violet-500" : "text-muted-foreground"}`} />}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                       <motion.div 
+                         initial={{ height: 0, opacity: 0 }}
+                         animate={{ height: "auto", opacity: 1 }}
+                         exit={{ height: 0, opacity: 0 }}
+                         transition={{ duration: 0.3, ease: "easeInOut" }}
+                         className="flex flex-col divide-y divide-border/20 border-t border-border/20 bg-background/50 overflow-hidden"
+                       >
+                          {topicContents.map((content, idx) => {
+                            const isSelected = selectedContent?.id === content.id;
+                            return (
+                              <button
+                                key={content.id}
+                                onClick={() => selectContent(content)}
+                                className={`w-full text-left flex items-start gap-3 px-5 py-3 transition-colors ${
+                                  isSelected
+                                    ? "bg-primary/5 border-l-2 border-primary"
+                                    : "hover:bg-muted/20 border-l-2 border-transparent"
+                                }`}
+                              >
+                                {content.thumbnail_url ? (
+                                   <div className="w-16 h-10 rounded-md overflow-hidden bg-muted shrink-0 flex items-center justify-center border border-border/50">
+                                      <img src={content.thumbnail_url} alt={content.title} className="w-full h-full object-cover" />
+                                   </div>
+                                ) : (
+                                   <div className="w-8 h-8 rounded-md bg-muted/50 flex items-center justify-center shrink-0">
+                                      {content.video_url ? <Video className="w-4 h-4 text-muted-foreground" /> : <FileText className="w-4 h-4 text-muted-foreground" />}
+                                   </div>
+                                )}
+                                
+                                <div className="flex flex-col flex-1 min-w-0">
+                                  <p className={`font-heading font-extrabold text-[13px] truncate ${
+                                    isSelected ? "text-primary" : "text-foreground/80"
+                                  }`}>
+                                    {content.title}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    {content.video_url && <Video className={`w-3 h-3 ${isSelected ? "text-red-500" : "text-muted-foreground"}`} />}
+                                    {content.drive_file_url && <FileText className={`w-3 h-3 ${isSelected ? "text-blue-500" : "text-muted-foreground"}`} />}
+                                    {content.app_url && <AppWindow className={`w-3 h-3 ${isSelected ? "text-violet-500" : "text-muted-foreground"}`} />}
+                                  </div>
                                 </div>
-                              </div>
-                              {isSelected && <PlayCircle className="w-4 h-4 text-primary flex-shrink-0" />}
-                            </button>
-                          );
-                        })}
-                        {topicContents.length === 0 && (
-                           <div className="px-5 py-3 text-xs text-muted-foreground italic">
-                              Bu konuya henüz içerik eklenmemiş.
-                           </div>
-                        )}
-                     </div>
-                  )}
+                                {isSelected && <PlayCircle className="w-4 h-4 text-primary flex-shrink-0 mt-1" />}
+                              </button>
+                            );
+                          })}
+                          {topicContents.length === 0 && (
+                             <div className="px-5 py-3 text-xs text-muted-foreground italic">
+                                Bu konuya henüz içerik eklenmemiş.
+                             </div>
+                          )}
+                       </motion.div>
+                    )}
+                  </AnimatePresence>
                </div>
             );
-          })}
+          });
+          })()}
         </div>
       </div>
+      
+      {/* Quiz Modal */}
+      {selectedContent && (
+        <StudentQuizModal 
+          contentId={selectedContent.id} 
+          isOpen={isQuizModalOpen} 
+          onClose={() => setIsQuizModalOpen(false)} 
+        />
+      )}
     </div>
   );
 }

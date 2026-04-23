@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { signout } from "@/app/(auth)/actions";
 import type { User } from "@supabase/supabase-js";
-import { LogOut, ChevronDown, Shield, GraduationCap, Radio } from "lucide-react";
+import { LogOut, ChevronDown, Shield, GraduationCap, Radio, Menu } from "lucide-react";
 
 export function NavbarClient({ user, role }: { user: User | null; role: string | null }) {
   // Rol bazlı panel linki
@@ -15,12 +15,21 @@ export function NavbarClient({ user, role }: { user: User | null; role: string |
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm relative">
       <div className="container flex h-[4.5rem] items-center justify-between px-6 lg:px-12 max-w-7xl mx-auto">
-        <div className="flex gap-8 items-center">
+        <div className="flex gap-4 md:gap-8 items-center">
+          {user && role === "admin" && (
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('toggleAdminDrawer'))}
+              className="p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              aria-label="Yönetici Menüsünü Aç"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          )}
           <Link href="/" className="flex items-center space-x-3 group cursor-pointer">
             <div className="w-10 h-10 bg-primary/10 rounded-[12px] flex items-center justify-center border border-primary/10 group-hover:bg-primary/20 transition-colors">
                <span className="font-heading font-black text-xl text-primary">B</span>
             </div>
-            <span className="font-heading font-extrabold text-xl tracking-tight text-foreground">
+            <span className="font-heading font-extrabold text-xl tracking-tight text-foreground hidden sm:inline-block">
               Berkan Matematik
             </span>
           </Link>
@@ -82,26 +91,8 @@ export function NavbarClient({ user, role }: { user: User | null; role: string |
                 {panelLabel}
               </Link>
             )}
+            
 
-            {/* Admin için ek Sınav Yönetimi linki */}
-            {user && role === "admin" && (
-              <Link
-                href="/admin/exams"
-                className="flex items-center text-sm font-bold font-heading text-secondary transition-colors hover:text-secondary/80 cursor-pointer"
-              >
-                Sınav Yönetimi
-              </Link>
-            )}
-            {/* Admin için Canlı Ders yönetim linki */}
-            {user && role === "admin" && (
-              <Link
-                href="/admin/canli-ders"
-                className="flex items-center gap-1.5 text-sm font-bold font-heading text-red-500 transition-colors hover:text-red-600 cursor-pointer"
-              >
-                <Radio className="w-4 h-4" />
-                Yayın Yönet
-              </Link>
-            )}
             
 
           </nav>

@@ -15,6 +15,8 @@ type ResultData = {
     selectedOption: string | null;
     correctOption: string;
     isCorrect: boolean;
+    timeSpentMs?: number;
+    achievement?: string | null;
   }[];
 };
 
@@ -82,9 +84,11 @@ export async function generateResultPDF(data: ResultData) {
   doc.rect(margin, y, 180, 8, "F");
   doc.setFontSize(9);
   doc.text("No", margin + 2, y + 5.5);
-  doc.text("Senin Cevabın", margin + 15, y + 5.5);
-  doc.text("Dogru Cevap", margin + 55, y + 5.5);
-  doc.text("Sonuc", margin + 95, y + 5.5);
+  doc.text("Cevabin", margin + 10, y + 5.5);
+  doc.text("Dogru", margin + 30, y + 5.5);
+  doc.text("Sonuc", margin + 50, y + 5.5);
+  doc.text("Sure", margin + 70, y + 5.5);
+  doc.text("Kazanim", margin + 95, y + 5.5);
   y += 8;
 
   doc.setFont("helvetica", "normal");
@@ -100,16 +104,76 @@ export async function generateResultPDF(data: ResultData) {
 
     doc.setTextColor(0, 0, 0);
     doc.text(String(q.orderIndex), margin + 2, y + 5);
-    doc.text(q.selectedOption ?? "-", margin + 15, y + 5);
-    doc.text(q.correctOption, margin + 55, y + 5);
+    doc.text(q.selectedOption ?? "-", margin + 10, y + 5);
+    doc.text(q.correctOption, margin + 30, y + 5);
 
     const sonuc = q.isCorrect ? "Dogru" : q.selectedOption ? "Yanlis" : "Bos";
     const sonucColor = q.isCorrect ? [22, 163, 74] : q.selectedOption ? [220, 38, 38] : [100, 116, 139];
     doc.setTextColor(...(sonucColor as [number, number, number]));
-    doc.text(sonuc, margin + 95, y + 5);
+    doc.text(sonuc, margin + 50, y + 5);
+
     doc.setTextColor(0, 0, 0);
+    const sureSn = q.timeSpentMs ? Math.floor(q.timeSpentMs / 1000) : 0;
+    const sureDk = Math.floor(sureSn / 60);
+    const sureKalanSn = sureSn % 60;
+    const sureStr = sureDk > 0 ? `${sureDk}dk ${sureKalanSn}sn` : `${sureKalanSn}sn`;
+    doc.text(q.timeSpentMs !== undefined ? sureStr : "-", margin + 70, y + 5);
+
+    // Kazanim column (truncate if too long)
+    if (q.achievement) {
+        let achText = q.achievement.length > 45 ? q.achievement.substring(0, 42) + "..." : q.achievement;
+        // Basic conversion to remove turkish chars for jsPDF standard font
+        achText = achText.replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                         .replace(/İ/g, 'I').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
+        doc.text(achText, margin + 95, y + 5);
+    }
+
     y += 7;
   });
+
+  // --- Geliştirilmesi Gereken Kazanımlar (Eğer varsa) ---
+  const wrongAchievements = data.questions
+    .filter((q) => !q.isCorrect && q.achievement)
+    .map((q) => q.achievement!)
+    .reduce((acc, curr) => {
+      acc[curr] = (acc[curr] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+  const improvementAreas = Object.entries(wrongAchievements)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, count }));
+
+  if (improvementAreas.length > 0) {
+    if (y > 250) {
+        doc.addPage();
+        y = margin;
+    } else {
+        y += 10;
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(220, 38, 38); // Red color for attention
+    doc.text("Gelistirilmesi Gereken Konular", margin, y); y += 6;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+
+    improvementAreas.forEach((area) => {
+        if (y > 270) {
+            doc.addPage();
+            y = margin;
+        }
+        let achText = area.name;
+        achText = achText.replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                         .replace(/İ/g, 'I').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
+        
+        doc.text(`- ${achText} (${area.count} Hata)`, margin + 5, y);
+        y += 6;
+    });
+  }
 
   // --- Alt bilgi ---
   doc.setFontSize(8);

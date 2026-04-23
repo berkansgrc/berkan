@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import AdminLiveStreamForm from "@/components/admin/AdminLiveStreamForm";
+import AdminPollManager from "@/components/admin/AdminPollManager";
 import { ArrowLeft, Radio } from "lucide-react";
 
 export const metadata = {
@@ -33,6 +34,12 @@ export default async function AdminCanliDersPage() {
         </div>
       </div>
       <AdminLiveStreamForm initialConfig={config} />
+
+      {/* Bölücü */}
+      <div className="my-10 border-t border-border/50" />
+
+      {/* Canlı Anket Yönetimi */}
+      <AdminPollManager />
     </div>
   );
 }

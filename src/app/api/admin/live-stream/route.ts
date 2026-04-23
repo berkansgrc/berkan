@@ -53,5 +53,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: result.error.message }, { status: 500 });
   }
 
+  // Yayın kapatıldığında tüm canlı etkileşim verilerini temizle
+  if (body.is_live === false) {
+    await Promise.all([
+      adminClient.from("live_poll_votes").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+      adminClient.from("live_question_upvotes").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+    ]);
+    // Cascade silinecekler temizlendikten sonra ana tabloları sil
+    await Promise.all([
+      adminClient.from("live_polls").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+      adminClient.from("live_questions").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+    ]);
+  }
+
   return NextResponse.json({ success: true });
 }

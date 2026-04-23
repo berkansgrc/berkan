@@ -1,6 +1,7 @@
 import { BookOpen, Trophy, Clock, Target, ArrowRight, Play, CheckCircle2 } from "lucide-react";
 import { getCachedUser, getCachedProfile } from "@/utils/supabase/queries";
 import { createClient } from "@/utils/supabase/server";
+import DashboardLessons from "@/components/dashboard/DashboardLessons";
 
 export const metadata = {
   title: "Panelim | Berkan Matematik",
@@ -153,6 +154,9 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Yaklaşan Özel Derslerim */}
+        <DashboardLessons userId={user.id} />
       </div>
     </div>
   );

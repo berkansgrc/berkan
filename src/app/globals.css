@@ -161,4 +161,86 @@
   .math-icon-bg { 
     background: radial-gradient(circle at center, rgba(154, 235, 228, 0.4) 0%, transparent 70%); 
   }
+
+  /* ── Premium Micro-interaction Utilities ── */
+
+  /* Parlayan seçenek geri bildirimi */
+  .option-correct-glow {
+    animation: option-glow-pulse 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+  .option-wrong-shake {
+    animation: option-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  /* Progress bar shimmer efekti */
+  .progress-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shimmer-pass 0.8s ease-out forwards;
+  }
+
+  /* Kazanım etiketi genişleme */
+  .achievement-badge {
+    transition: max-width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                padding 0.3s ease,
+                box-shadow 0.3s ease;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .achievement-badge:hover {
+    box-shadow: 0 0 12px rgba(0, 103, 98, 0.25);
+  }
+
+  /* Sayı sayma animasyonu için */
+  .count-up {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@theme inline {
+  --animate-shimmer-pass: shimmer-pass 0.8s ease-out;
+  --animate-option-glow-pulse: option-glow-pulse 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  --animate-option-shake: option-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  --animate-score-reveal: score-reveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  --animate-stagger-in: stagger-in 0.5s ease-out forwards;
+
+  @keyframes shimmer-pass {
+    0%   { left: -100%; opacity: 1; }
+    100% { left: 150%;  opacity: 0; }
+  }
+
+  @keyframes option-glow-pulse {
+    0%   { box-shadow: 0 0 0px 0px rgba(0, 103, 98, 0); }
+    40%  { box-shadow: 0 0 0px 8px rgba(0, 103, 98, 0.3); }
+    100% { box-shadow: 0 0 0px 4px rgba(0, 103, 98, 0.1); }
+  }
+
+  @keyframes option-shake {
+    10%, 90%  { transform: translateX(-2px); }
+    20%, 80%  { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60%  { transform: translateX(4px); }
+    100% { transform: translateX(0); }
+  }
+
+  @keyframes score-reveal {
+    0%   { transform: translateY(20px) scale(0.8); opacity: 0; }
+    70%  { transform: translateY(-4px) scale(1.05); }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  @keyframes stagger-in {
+    0%   { transform: translateY(16px); opacity: 0; }
+    100% { transform: translateY(0);    opacity: 1; }
+  }
+
+  @keyframes magnetic-lift {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-3px) scale(1.02); }
+  }
 }

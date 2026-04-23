@@ -7,14 +7,14 @@ import { ArrowLeft, BookOpen } from "lucide-react";
 export const revalidate = 300; // 5 dakikada bir yenile
 
 const GRADES = [
-  { label: "5. Sınıf", value: "5-sinif" },
-  { label: "6. Sınıf", value: "6-sinif" },
-  { label: "7. Sınıf", value: "7-sinif" },
-  { label: "LGS", value: "lgs" },
-  { label: "9. Sınıf", value: "9-sinif" },
-  { label: "10. Sınıf", value: "10-sinif" },
-  { label: "11. Sınıf", value: "11-sinif" },
-  { label: "TYT-AYT", value: "tyt-ayt" },
+  { label: "5. Sınıf", value: "5-sinif", color: "bg-blue-500/10" },
+  { label: "6. Sınıf", value: "6-sinif", color: "bg-green-500/10" },
+  { label: "7. Sınıf", value: "7-sinif", color: "bg-purple-500/10" },
+  { label: "LGS", value: "lgs", color: "bg-orange-500/10" },
+  { label: "9. Sınıf", value: "9-sinif", color: "bg-teal-500/10" },
+  { label: "10. Sınıf", value: "10-sinif", color: "bg-indigo-500/10" },
+  { label: "11. Sınıf", value: "11-sinif", color: "bg-pink-500/10" },
+  { label: "TYT-AYT", value: "tyt-ayt", color: "bg-red-500/10" },
 ];
 
 /** Build anında tüm sınıf sayfalarını statik üret — CDN'den sıfır TTFB */
@@ -67,15 +67,34 @@ export default async function GradePage({ params }: { params: Promise<{ gradeSlu
         .in("topic_id", topicIds)
         .eq("is_published", true)
         .order("sort_order");
-      contents = data ?? [];
+      
+      const fetchedContents = data ?? [];
+      
+      // Konuların sort_order'ına hızlı erişim için bir map (sözlük) oluşturalım
+      const topicSortMap = new Map(topics.map(t => [t.id, t.sort_order ?? 0]));
+
+      contents = fetchedContents.sort((a, b) => {
+        const orderA = topicSortMap.get(a.topic_id) ?? 0;
+        const orderB = topicSortMap.get(b.topic_id) ?? 0;
+        
+        // Önce konuların sırasına göre sırala
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        
+        // Aynı konunun içeriklerini kendi aralarında sırala
+        return (a.sort_order ?? 0) - (b.sort_order ?? 0);
+      });
     }
   }
 
 
+  const gradeColor = GRADES.find((g) => g.value === gradeSlug)?.color || "bg-secondary/10";
+
   return (
     <div className="relative min-h-[calc(100vh-4.5rem)] w-full pb-20 bg-background overflow-x-hidden">
       {/* Decorative */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[100px] z-0 pointer-events-none translate-x-1/3 -translate-y-1/3" />
+      <div className={`fixed top-0 right-0 w-[500px] h-[500px] ${gradeColor} rounded-full blur-[100px] z-0 pointer-events-none translate-x-1/3 -translate-y-1/3`} />
 
       {/* Header */}
       <div className="relative border-b border-border/50 bg-card/60 backdrop-blur-xl z-10">

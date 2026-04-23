@@ -27,6 +27,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Başlık ve en az bir soru gereklidir." }, { status: 400 });
   }
 
+  // 9 karakterlik okunabilir bir kod oluştur
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let shareCode = "";
+  for (let i = 0; i < 9; i++) {
+    shareCode += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
   // Sınavı oluştur
   const { data: exam, error: examError } = await supabase
     .from("exams")
@@ -37,8 +44,9 @@ export async function POST(req: NextRequest) {
       access_mode: access_mode || "public",
       is_published: is_published ?? false,
       created_by: user.id,
+      share_code: shareCode,
     })
-    .select("id")
+    .select("id, share_code")
     .single();
 
   if (examError) {
@@ -54,6 +62,7 @@ export async function POST(req: NextRequest) {
     correct_option: q.correct_option,
     order_index: q.order_index,
     image_url: q.image_url || null,
+    achievement: q.achievement || null,
   }));
 
   const { error: qError } = await supabase.from("questions").insert(questionRows);
@@ -64,5 +73,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: qError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, examId: exam.id });
+  return NextResponse.json({ success: true, examId: exam.id, shareCode: exam.share_code });
 }

@@ -7,6 +7,8 @@ interface LiveStreamConfig {
   id?: string;
   youtube_video_id?: string | null;
   youtube_chat_id?: string | null;
+  stream_type?: string | null;
+  daily_room_url?: string | null;
   is_live?: boolean;
   lesson_title?: string | null;
   lesson_description?: string | null;
@@ -16,8 +18,10 @@ interface LiveStreamConfig {
 
 export default function AdminLiveStreamForm({ initialConfig }: { initialConfig: LiveStreamConfig | null }) {
   const [isLive, setIsLive] = useState(initialConfig?.is_live ?? false);
+  const [streamType, setStreamType] = useState(initialConfig?.stream_type ?? "youtube");
   const [youtubeVideoId, setYoutubeVideoId] = useState(initialConfig?.youtube_video_id ?? "");
   const [youtubeChatId, setYoutubeChatId] = useState(initialConfig?.youtube_chat_id ?? "");
+  const [dailyRoomUrl, setDailyRoomUrl] = useState(initialConfig?.daily_room_url ?? "");
   const [lessonTitle, setLessonTitle] = useState(initialConfig?.lesson_title ?? "");
   const [lessonDescription, setLessonDescription] = useState(initialConfig?.lesson_description ?? "");
   const [scheduledAt, setScheduledAt] = useState(
@@ -36,8 +40,10 @@ export default function AdminLiveStreamForm({ initialConfig }: { initialConfig: 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          youtube_video_id: youtubeVideoId,
-          youtube_chat_id: youtubeChatId || youtubeVideoId,
+          stream_type: streamType,
+          youtube_video_id: streamType === "youtube" ? youtubeVideoId : null,
+          youtube_chat_id: streamType === "youtube" ? (youtubeChatId || youtubeVideoId) : null,
+          daily_room_url: streamType === "daily" ? dailyRoomUrl : null,
           is_live: isLive,
           lesson_title: lessonTitle,
           lesson_description: lessonDescription,

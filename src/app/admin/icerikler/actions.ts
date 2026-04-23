@@ -156,6 +156,8 @@ export async function createContent(formData: FormData) {
     const payload = {
       topic_id: formData.get("topic_id") as string,
       title: formData.get("title") as string,
+      description_rich: formData.get("description_rich") as string || null,
+      thumbnail_url: formData.get("thumbnail_url") as string || null,
       video_url: formData.get("video_url") as string || null,
       drive_file_url: formData.get("drive_file_url") as string || null,
       app_url: formData.get("app_url") as string || null,
@@ -186,6 +188,8 @@ export async function updateContent(formData: FormData) {
     
     const payload = {
       title: formData.get("title") as string,
+      description_rich: formData.get("description_rich") as string || null,
+      thumbnail_url: formData.get("thumbnail_url") as string || null,
       video_url: formData.get("video_url") as string || null,
       drive_file_url: formData.get("drive_file_url") as string || null,
       app_url: formData.get("app_url") as string || null,
@@ -218,6 +222,28 @@ export async function deleteContent(formData: FormData) {
     revalidatePath("/sinif", "layout");
   } catch (err: any) {
     console.error("Content delete error:", err);
+    throw err;
+  }
+}
+
+export async function reorderContents(payload: { id: string; sort_order: number }[]) {
+  try {
+    const adminSupabase = getAdminClient();
+    
+    // Perform updates in parallel
+    await Promise.all(
+      payload.map((item) =>
+        adminSupabase
+          .from("contents")
+          .update({ sort_order: item.sort_order })
+          .eq("id", item.id)
+      )
+    );
+
+    revalidatePath("/admin/icerikler");
+    revalidatePath("/sinif", "layout");
+  } catch (err: any) {
+    console.error("Content reorder error:", err);
     throw err;
   }
 }

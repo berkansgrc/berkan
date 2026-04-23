@@ -19,6 +19,7 @@ type Props = {
     selectedOption: string | null;
     correctOption: string;
     isCorrect: boolean;
+    timeSpentMs?: number;
   }[];
 };
 

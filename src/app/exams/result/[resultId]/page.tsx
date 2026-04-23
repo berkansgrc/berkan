@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, MinusCircle, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import DownloadPDFButton from "@/components/exam/DownloadPDFButton";
+import ResultAnalysisClient from "@/components/exam/ResultAnalysisClient";
 
 type Props = {
   params: Promise<{ resultId: string }>;
@@ -31,7 +31,7 @@ export default async function ResultPage({ params }: Props) {
   // Soruları ve cevapları getir
   const { data: questions } = await supabase
     .from("questions")
-    .select("id, body, correct_option, order_index")
+    .select("id, body, correct_option, order_index, achievement")
     .eq("exam_id", exam?.id ?? "")
     .order("order_index");
 
@@ -44,11 +44,13 @@ export default async function ResultPage({ params }: Props) {
   });
 
   const pdfQuestions = (questions ?? []).map((q) => ({
+    id: q.id,
     orderIndex: q.order_index,
     body: q.body,
     selectedOption: answers[q.id] ?? null,
     correctOption: q.correct_option,
     isCorrect: answers[q.id] === q.correct_option,
+    achievement: q.achievement ?? null,
   }));
 
   const stats = [
@@ -75,65 +77,38 @@ export default async function ResultPage({ params }: Props) {
 
         {/* İstatistik Kartları */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {stats.map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className={`rounded-2xl border-2 p-5 text-center space-y-2 ${color}`}>
+          {stats.map(({ label, value, icon: Icon, color }, i) => (
+            <div
+              key={label}
+              className={`rounded-2xl border-2 p-5 text-center space-y-2 ${color} backdrop-blur-sm`}
+              style={{
+                animation: `stagger-in 0.5s ease-out ${i * 0.1}s both`,
+              }}
+            >
               <Icon className="h-6 w-6 mx-auto" />
-              <p className="text-3xl font-bold">{value}</p>
+              <p className="text-3xl font-bold count-up">{value}</p>
               <p className="text-xs font-medium uppercase tracking-wide">{label}</p>
             </div>
           ))}
         </div>
 
-        {/* Soru Analizi */}
-        <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b bg-muted/30">
-            <h2 className="font-semibold">Soru Analizi</h2>
-          </div>
-          <div className="divide-y">
-            {pdfQuestions.map((q) => (
-              <div key={q.orderIndex} className="flex items-start gap-4 px-6 py-4">
-                <span className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold bg-muted">
-                  {q.orderIndex}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-muted-foreground line-clamp-2">{q.body}</p>
-                  <div className="flex gap-4 mt-1 text-xs">
-                    <span>
-                      Cevabın:{" "}
-                      <strong className={q.selectedOption ? "" : "text-muted-foreground"}>
-                        {q.selectedOption ?? "Boş"}
-                      </strong>
-                    </span>
-                    <span>
-                      Doğru: <strong className="text-green-600">{q.correctOption}</strong>
-                    </span>
-                  </div>
-                </div>
-                {q.isCorrect ? (
-                  <CheckCircle className="shrink-0 h-5 w-5 text-green-600" />
-                ) : q.selectedOption ? (
-                  <XCircle className="shrink-0 h-5 w-5 text-red-500" />
-                ) : (
-                  <MinusCircle className="shrink-0 h-5 w-5 text-slate-400" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+
+        {/* Soru Analizi ve PDF İndirme (Client Component) */}
+        <ResultAnalysisClient
+          examId={exam?.id ?? ""}
+          questions={pdfQuestions}
+          studentName={studentName}
+          examTitle={exam?.title ?? "Sınav"}
+          date={date}
+          durationMinutes={exam?.duration_minutes ?? 0}
+          correct={result.correct ?? 0}
+          wrong={result.wrong ?? 0}
+          blank={result.blank ?? 0}
+          score={Number(result.score ?? 0)}
+        />
 
         {/* Aksiyon Butonları */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <DownloadPDFButton
-            studentName={studentName}
-            examTitle={exam?.title ?? "Sınav"}
-            date={date}
-            durationMinutes={exam?.duration_minutes ?? 0}
-            correct={result.correct ?? 0}
-            wrong={result.wrong ?? 0}
-            blank={result.blank ?? 0}
-            score={Number(result.score ?? 0)}
-            questions={pdfQuestions}
-          />
+        <div className="flex justify-center mt-4">
           <Link href="/exams">
             <Button variant="outline">Tüm Sınavlara Dön</Button>
           </Link>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signout } from "@/app/(auth)/actions";
@@ -13,6 +14,8 @@ import {
   ChevronRight,
   Settings,
   GraduationCap,
+  Video,
+  X,
 } from "lucide-react";
 
 const navItems = [
@@ -39,6 +42,11 @@ const navItems = [
     badge: "CANLI",
   },
   {
+    label: "Özel Dersler",
+    href: "/admin/lessons",
+    icon: Video,
+  },
+  {
     label: "Kullanıcılar",
     href: "/admin/kullanici",
     icon: Users,
@@ -53,6 +61,13 @@ export default function AdminSidebar({
   email: string;
 }) {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleToggle = () => setIsOpen((prev) => !prev);
+    window.addEventListener("toggleAdminDrawer", handleToggle);
+    return () => window.removeEventListener("toggleAdminDrawer", handleToggle);
+  }, []);
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -65,10 +80,22 @@ export default function AdminSidebar({
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 flex-shrink-0 flex-col sticky top-[4.5rem] h-[calc(100vh-4.5rem)] border-r border-border/50 bg-card/40 backdrop-blur-xl z-20">
-        {/* Logo / Brand Header */}
-        <div className="p-6 border-b border-border/50">
+      {/* Backdrop overlay */}
+      <div
+        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-[60] transition-opacity duration-300 ${
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+        onClick={() => setIsOpen(false)}
+      />
+
+      {/* Drawer */}
+      <aside
+        className={`fixed top-0 left-0 h-screen w-72 bg-card border-r border-border/50 shadow-2xl z-[70] flex flex-col transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Header */}
+        <div className="p-6 border-b border-border/50 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="absolute inset-0 bg-red-500/20 blur-md rounded-xl" />
@@ -83,6 +110,13 @@ export default function AdminSidebar({
               </p>
             </div>
           </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-2 -mr-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+            aria-label="Kapat"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Navigation */}
@@ -96,6 +130,7 @@ export default function AdminSidebar({
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setIsOpen(false)}
                 className={`group flex items-center gap-3 px-3 py-2.5 rounded-[10px] transition-all duration-200 relative ${
                   active
                     ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
@@ -147,38 +182,6 @@ export default function AdminSidebar({
           </div>
         </div>
       </aside>
-
-      {/* Mobile Bottom Tab Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border/50 bg-card/80 backdrop-blur-xl">
-        <div className="flex items-center justify-around px-2 py-2">
-          {navItems.map((item) => {
-            const active = isActive(item.href, item.exact);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
-                  active
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="text-[9px] font-bold">{item.label}</span>
-              </Link>
-            );
-          })}
-          <form action={signout}>
-            <button
-              type="submit"
-              className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-muted-foreground hover:text-destructive transition-all"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="text-[9px] font-bold">Çıkış</span>
-            </button>
-          </form>
-        </div>
-      </div>
     </>
   );
 }

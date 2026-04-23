@@ -27,8 +27,32 @@ import {
   Loader2,
   ArrowLeft,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  GripVertical,
+  GraduationCap
 } from "lucide-react";
+
+import Link from "next/link";
+
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useEffect } from "react";
+import { reorderContents } from "@/app/admin/icerikler/actions";
 
 interface Course {
   id: string;
@@ -48,6 +72,8 @@ interface Content {
   id: string;
   topic_id: string;
   title: string;
+  description_rich: string | null;
+  thumbnail_url: string | null;
   video_url: string | null;
   drive_file_url: string | null;
   app_url: string | null;
@@ -100,6 +126,46 @@ export default function ContentManager({
   const [expandedTopics, setExpandedTopics] = useState<string[]>([]);
   const [editingContent, setEditingContent] = useState<string | null>(null);
   const [addingContentTo, setAddingContentTo] = useState<string | null>(null);
+  const [optimisticContents, setOptimisticContents] = useState<Content[]>(contents);
+
+  useEffect(() => {
+    setOptimisticContents(contents);
+  }, [contents]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setOptimisticContents((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        // Sadece aynı konudaki item'ları bulup sort_order'larını güncelle
+        const movedItem = items[oldIndex];
+        const topicId = movedItem.topic_id;
+        
+        const topicItems = newItems.filter(item => item.topic_id === topicId);
+        
+        // Optimistic update API Call
+        const payload = topicItems.map((item, index) => ({
+           id: item.id,
+           sort_order: index + 1
+        }));
+        
+        reorderContents(payload).catch(console.error);
+
+        return newItems;
+      });
+    }
+  };
 
   const toggleTopic = (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -202,7 +268,7 @@ export default function ContentManager({
       ) : (
         <div className="rounded-[1.5rem] border border-border/50 bg-card/60 backdrop-blur-xl overflow-hidden shadow-sm px-6 pb-6 pt-6 space-y-4">
           {gradeTopics.map((topic, index) => {
-            const topicContents = contents.filter((c) => c.topic_id === topic.id);
+            const topicContents = optimisticContents.filter((c) => c.topic_id === topic.id);
             const isTopicExpanded = expandedTopics.includes(topic.id);
             const isFirst = index === 0;
             const isLast = index === gradeTopics.length - 1;
@@ -284,15 +350,28 @@ export default function ContentManager({
                 {/* Materyaller Listesi */}
                 {isTopicExpanded && (
                   <div className="px-5 pb-5 pt-2 space-y-3 bg-muted/10 border-t border-border/30 cursor-default">
-                    {topicContents.map((content) => (
-                      <ContentCard
-                        key={content.id}
-                        item={content}
-                        isEditing={editingContent === content.id}
-                        onEdit={() => setEditingContent(content.id)}
-                        onCancel={() => setEditingContent(null)}
-                      />
-                    ))}
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={topicContents.map(c => c.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {topicContents
+                          .sort((a, b) => a.sort_order - b.sort_order)
+                          .map((content) => (
+                          <SortableContentCard
+                            key={content.id}
+                            item={content}
+                            isEditing={editingContent === content.id}
+                            onEdit={() => setEditingContent(content.id)}
+                            onCancel={() => setEditingContent(null)}
+                          />
+                        ))}
+                      </SortableContext>
+                    </DndContext>
 
                     {/* İçerik Ekle Formu Göster/Gizle */}
                     {addingContentTo === topic.id ? (
@@ -322,17 +401,50 @@ export default function ContentManager({
   );
 }
 
+// ===================== Sortable Wrapper =====================
+function SortableContentCard(props: {
+  item: Content;
+  isEditing: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: isDragging ? "relative" : "static",
+    zIndex: isDragging ? 50 : "auto",
+  } as React.CSSProperties;
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <ContentCard {...props} dragHandleProps={{ ...attributes, ...listeners }} />
+    </div>
+  );
+}
+
 // ===================== İçerik Kartı =====================
 function ContentCard({
   item,
   isEditing,
   onEdit,
   onCancel,
+  dragHandleProps,
 }: {
   item: Content;
   isEditing: boolean;
   onEdit: () => void;
   onCancel: () => void;
+  dragHandleProps?: any;
 }) {
   if (isEditing) {
     return (
@@ -347,6 +459,12 @@ function ContentCard({
 
   return (
     <div className="rounded-xl border border-border/30 bg-card/40 p-3.5 flex items-start gap-3 group hover:bg-muted/20 transition-colors">
+      <div 
+        {...dragHandleProps} 
+        className="mt-1.5 cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100 transition-opacity"
+      >
+         <GripVertical className="w-4 h-4 text-muted-foreground" />
+      </div>
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.is_published ? "bg-primary/10" : "bg-muted"}`}>
         <Video className={`w-4 h-4 ${item.is_published ? "text-primary" : "text-muted-foreground"}`} />
       </div>
@@ -380,6 +498,13 @@ function ContentCard({
         </div>
       </div>
       <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+        <Link
+          href={`/admin/icerikler/${item.id}/quiz`}
+          className="p-1.5 rounded-lg hover:bg-orange-500/10 text-muted-foreground hover:text-orange-500 transition-colors"
+          title="Mini Test Soruları"
+        >
+          <GraduationCap className="w-3.5 h-3.5" />
+        </Link>
         <button
           type="button"
           onClick={onEdit}
@@ -453,6 +578,32 @@ function ContentForm({
           required
           defaultValue={content?.title}
           placeholder="Örn: 1. Ders: Küme Nedir?"
+          className="w-full h-10 px-3 rounded-lg border border-border bg-input/50 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+      </div>
+
+      {/* Description Rich (Markdown) */}
+      <div>
+        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 block">
+          Açıklama (Markdown & LaTeX Destekli)
+        </label>
+        <textarea
+          name="description_rich"
+          defaultValue={content?.description_rich ?? ""}
+          placeholder="Dersin içeriğini detaylıca anlatın. Formüller ve markdown kullanabilirsiniz."
+          className="w-full min-h-[100px] px-3 py-2 rounded-lg border border-border bg-input/50 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
+        />
+      </div>
+
+      {/* Thumbnail URL */}
+      <div>
+        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 block">
+          Kapak Görseli URL
+        </label>
+        <input
+          name="thumbnail_url"
+          defaultValue={content?.thumbnail_url ?? ""}
+          placeholder="https://..."
           className="w-full h-10 px-3 rounded-lg border border-border bg-input/50 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
       </div>

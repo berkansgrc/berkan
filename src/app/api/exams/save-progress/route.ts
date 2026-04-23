@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // Sadece cevapları güncelle (heartbeat / ara kayıt)
+  // Sadece cevapları ve süreleri güncelle (heartbeat / ara kayıt)
   const { error } = await supabase
     .from("exam_results")
     .update({

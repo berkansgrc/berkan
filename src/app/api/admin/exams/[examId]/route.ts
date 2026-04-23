@@ -70,6 +70,7 @@ export async function PUT(
         correct_option: q.correct_option,
         order_index: q.order_index,
         image_url: q.image_url || null,
+        achievement: q.achievement || null,
       }));
 
       const { error: questionsError } = await supabase

@@ -15,6 +15,7 @@ export type QuestionDraft = {
   options: { label: string; text: string }[];
   correctOption: string;
   imageUrl: string;
+  achievement: string;
 };
 
 export type ExamDraft = {
@@ -37,6 +38,7 @@ function createEmptyQuestion(count: 4 | 5 = 4): QuestionDraft {
     options: LABELS.slice(0, count).map((l) => ({ label: l, text: "" })),
     correctOption: "A",
     imageUrl: "",
+    achievement: "",
   };
 }
 
@@ -158,6 +160,7 @@ export default function ExamCreateForm({ initialData }: { initialData?: ExamDraf
             correct_option: q.correctOption,
             order_index: i + 1,
             image_url: q.imageUrl || null,
+            achievement: q.achievement || null,
           })),
         }),
       });
@@ -391,6 +394,18 @@ export default function ExamCreateForm({ initialData }: { initialData?: ExamDraf
                                 value={q.body}
                                 onChange={(e) => updateQuestion(q.id, "body", e.target.value)}
                                 placeholder="Soru metnini buraya giriniz..."
+                            />
+                        </div>
+
+                        <div className="space-y-3">
+                            <Label className="font-semibold text-foreground flex items-center gap-2">
+                                Kazanım / Konu (Opsiyonel)
+                            </Label>
+                            <Input
+                                value={q.achievement || ""}
+                                onChange={(e) => updateQuestion(q.id, "achievement", e.target.value)}
+                                placeholder="Örn: İkinci dereceden denklemleri çözer..."
+                                className="h-12 bg-input/40 backdrop-blur-sm border-border/80 hover:border-primary/40 focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-[1.25rem] text-base transition-all"
                             />
                         </div>
 
