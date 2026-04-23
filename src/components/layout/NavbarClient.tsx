@@ -4,13 +4,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { signout } from "@/app/(auth)/actions";
 import type { User } from "@supabase/supabase-js";
-import { LogOut, ChevronDown, Shield, GraduationCap, Radio, Menu } from "lucide-react";
+import { Logout, ArrowDown2, ShieldTick, Teacher, Radio, HambergerMenu } from "iconsax-react";
 
 export function NavbarClient({ user, role }: { user: User | null; role: string | null }) {
   // Rol bazlı panel linki
   const panelHref = "/dashboard";
   const panelLabel = role === "admin" ? "Yönetici Paneli" : "Öğrenci Paneli";
-  const PanelIcon = role === "admin" ? Shield : GraduationCap;
+  const PanelIcon = role === "admin" ? ShieldTick : Teacher;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm relative">
@@ -22,7 +22,7 @@ export function NavbarClient({ user, role }: { user: User | null; role: string |
               className="p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               aria-label="Yönetici Menüsünü Aç"
             >
-              <Menu className="w-6 h-6" />
+              <HambergerMenu color="currentColor" size={24} className="w-6 h-6" variant="Outline" />
             </button>
           )}
           <Link href="/" className="flex items-center space-x-3 group cursor-pointer">
@@ -38,7 +38,7 @@ export function NavbarClient({ user, role }: { user: User | null; role: string |
             <div className="relative group/nav py-2">
               <button className="flex items-center gap-1 text-sm font-bold font-heading text-muted-foreground transition-colors hover:text-foreground cursor-pointer outline-none">
                 Sınıflar
-                <ChevronDown className="w-4 h-4 opacity-70 group-hover/nav:-rotate-180 transition-transform duration-300" />
+                <ArrowDown2 color="currentColor" size={24} className="w-4 h-4 opacity-70 group-hover/nav:-rotate-180 transition-transform duration-300" variant="Outline" />
               </button>
               
               <div className="absolute top-full left-0 mt-1 w-48 opacity-0 invisible group-hover/nav:opacity-100 group-hover/nav:visible group-hover/nav:translate-y-1 translate-y-2 transition-all duration-200 z-50">
@@ -87,7 +87,7 @@ export function NavbarClient({ user, role }: { user: User | null; role: string |
                 href={panelHref}
                 className="flex items-center gap-1.5 text-sm font-bold font-heading text-primary transition-colors hover:text-primary/80 cursor-pointer"
               >
-                <PanelIcon className="w-4 h-4" />
+                <PanelIcon className="w-4 h-4" variant="Bold" />
                 {panelLabel}
               </Link>
             )}
@@ -105,7 +105,7 @@ export function NavbarClient({ user, role }: { user: User | null; role: string |
               </span>
               <form action={signout}>
                 <button type="submit" className="text-sm font-bold font-heading text-muted-foreground hover:text-destructive flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-destructive/10 transition-colors cursor-pointer">
-                  <LogOut className="w-4 h-4" />
+                  <Logout color="currentColor" size={24} className="w-4 h-4" variant="Outline" />
                   <span className="hidden sm:inline">Çıkış</span>
                 </button>
               </form>

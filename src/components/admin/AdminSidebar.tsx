@@ -5,35 +5,35 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signout } from "@/app/(auth)/actions";
 import {
-  Shield,
-  LayoutDashboard,
-  BookOpen,
+  ShieldTick,
+  Category,
+  Book,
   Radio,
-  Users,
-  LogOut,
-  ChevronRight,
-  Settings,
-  GraduationCap,
-  Video,
-  X,
-} from "lucide-react";
+  Profile2User,
+  Logout,
+  ArrowRight2,
+  Setting2,
+  Teacher,
+  VideoPlay,
+  CloseCircle,
+} from "iconsax-react";
 
 const navItems = [
   {
     label: "Genel Bakış",
     href: "/admin",
-    icon: LayoutDashboard,
+    icon: Category,
     exact: true,
   },
   {
     label: "İçerik Yönetimi",
     href: "/admin/icerikler",
-    icon: GraduationCap,
+    icon: Teacher,
   },
   {
     label: "Sınav Yönetimi",
     href: "/admin/exams",
-    icon: BookOpen,
+    icon: Book,
   },
   {
     label: "Canlı Ders",
@@ -44,12 +44,12 @@ const navItems = [
   {
     label: "Özel Dersler",
     href: "/admin/lessons",
-    icon: Video,
+    icon: VideoPlay,
   },
   {
     label: "Kullanıcılar",
     href: "/admin/kullanici",
-    icon: Users,
+    icon: Profile2User,
   },
 ];
 
@@ -82,7 +82,7 @@ export default function AdminSidebar({
     <>
       {/* Backdrop overlay */}
       <div
-        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-[60] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-[60] transition-opacity duration-300 lg:hidden ${
           isOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         onClick={() => setIsOpen(false)}
@@ -90,7 +90,7 @@ export default function AdminSidebar({
 
       {/* Drawer */}
       <aside
-        className={`fixed top-0 left-0 h-screen w-72 bg-card border-r border-border/50 shadow-2xl z-[70] flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-screen w-72 bg-card border-r border-border/50 shadow-2xl lg:shadow-none z-[70] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -100,7 +100,7 @@ export default function AdminSidebar({
             <div className="relative">
               <div className="absolute inset-0 bg-red-500/20 blur-md rounded-xl" />
               <div className="relative w-10 h-10 rounded-[10px] bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white shadow-lg">
-                <Shield className="w-5 h-5" />
+                <ShieldTick color="currentColor" size={24} className="w-5 h-5" variant="Bold" />
               </div>
             </div>
             <div>
@@ -115,7 +115,7 @@ export default function AdminSidebar({
             className="p-2 -mr-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
             aria-label="Kapat"
           >
-            <X className="w-5 h-5" />
+            <CloseCircle color="currentColor" size={24} className="w-5 h-5 lg:hidden" variant="Bold" />
           </button>
         </div>
 
@@ -144,6 +144,7 @@ export default function AdminSidebar({
                   className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110 ${
                     active ? "text-primary" : ""
                   }`}
+                  variant={active ? "Bold" : "Outline"}
                 />
                 <span className="font-heading font-bold text-sm flex-1">{item.label}</span>
                 {item.badge && (
@@ -152,7 +153,7 @@ export default function AdminSidebar({
                     {item.badge}
                   </span>
                 )}
-                {active && <ChevronRight className="w-3 h-3 text-primary/50" />}
+                {active && <ArrowRight2 color="currentColor" size={24} className="w-3 h-3 text-primary/50" variant="Bold" />}
               </Link>
             );
           })}
@@ -176,7 +177,7 @@ export default function AdminSidebar({
                 className="p-1.5 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors text-muted-foreground"
                 title="Çıkış Yap"
               >
-                <LogOut className="w-4 h-4" />
+                <Logout color="currentColor" size={24} className="w-4 h-4" variant="Outline" />
               </button>
             </form>
           </div>

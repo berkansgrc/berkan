@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import LessonViewer from "@/components/lesson/LessonViewer";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft2, Book } from "iconsax-react";
 
 export const revalidate = 300; // 5 dakikada bir yenile
 
@@ -103,12 +103,12 @@ export default async function GradePage({ params }: { params: Promise<{ gradeSlu
             href="/"
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 text-sm font-medium"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft2 color="currentColor" size={24} className="w-4 h-4" variant="Outline" />
             <span>Ana Sayfaya Dön</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-secondary/10 border border-secondary/20 flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-secondary" />
+              <Book color="currentColor" size={24} className="w-6 h-6 text-secondary" variant="Bold" />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-heading font-extrabold tracking-tight text-foreground">
@@ -126,7 +126,7 @@ export default async function GradePage({ params }: { params: Promise<{ gradeSlu
       <div className="container max-w-7xl px-6 lg:px-12 py-10 mx-auto relative z-10">
         {topics.length === 0 || contents.length === 0 ? (
           <div className="rounded-[2rem] border border-dashed border-border bg-card/50 p-16 text-center text-muted-foreground flex flex-col items-center">
-            <BookOpen className="w-12 h-12 mb-4 opacity-30" />
+            <Book color="currentColor" size={24} className="w-12 h-12 mb-4 opacity-30" variant="Bold" />
             <p className="text-xl font-heading font-bold text-foreground">
               Bu sınıfa henüz konu veya içerik eklenmemiş.
             </p>

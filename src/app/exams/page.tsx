@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import ExamSearch from "@/components/exam/ExamSearch";
 import type { ExamSearchItem } from "@/lib/fuse";
-import { BookOpen } from "lucide-react";
+import { Book } from "iconsax-react";
 
 export const metadata = {
   title: "Sınavlar | Berkan Matematik",
@@ -37,7 +37,7 @@ export default async function ExamsPage() {
             <div className="relative">
               <div className="absolute inset-0 bg-primary/20 blur-md rounded-full"></div>
               <div className="relative z-10 h-14 w-14 rounded-2xl bg-primary-container border border-primary/20 flex items-center justify-center shadow-xl shadow-primary/10">
-                <BookOpen className="h-7 w-7 text-primary" />
+                <Book color="currentColor" size={24} className="h-7 w-7 text-primary" variant="Bold" />
               </div>
             </div>
             <div>
@@ -61,7 +61,7 @@ export default async function ExamsPage() {
         ) : examList.length === 0 ? (
           <div className="rounded-[2rem] border border-dashed border-primary/20 bg-primary/5 p-16 text-center text-muted-foreground flex flex-col items-center justify-center md:min-h-[400px]">
             <div className="w-16 h-16 bg-primary/10 rounded-[1.25rem] flex items-center justify-center mb-6 border border-primary/20 shadow-sm">
-              <BookOpen className="w-8 h-8 text-primary opacity-80" />
+              <Book color="currentColor" size={24} className="w-8 h-8 text-primary opacity-80" variant="Bold" />
             </div>
             <p className="text-2xl font-heading font-bold text-foreground">Henüz sınav bulunmuyor.</p>
             <p className="text-base mt-2 max-w-md mx-auto">Yakında yepyeni kinetik deneme sınavları buraya eklenecek. Beklemede kal!</p>

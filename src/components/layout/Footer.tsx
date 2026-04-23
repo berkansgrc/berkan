@@ -1,4 +1,4 @@
-import { Globe, Mail, Network } from "lucide-react";
+import { Global, Sms, DirectboxSend } from "iconsax-react";
 import Link from "next/link";
 
 export function Footer() {
@@ -17,9 +17,9 @@ export function Footer() {
             
             <p className="max-w-xs text-foreground/50 font-semibold text-lg">Kinetik hareketler ile evrenin dilini (Matematiği) yeniden keşfedin.</p>
             <div className="flex gap-4">
-              <a className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white transition-all" href="#"><Globe className="w-5 h-5" /></a>
-              <a className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white transition-all" href="#"><Mail className="w-5 h-5" /></a>
-              <a className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white transition-all" href="#"><Network className="w-5 h-5" /></a>
+              <a className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white transition-all" href="#"><Global color="currentColor" size={24} className="w-5 h-5" variant="Outline" /></a>
+              <a className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white transition-all" href="#"><Sms color="currentColor" size={24} className="w-5 h-5" variant="Outline" /></a>
+              <a className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white transition-all" href="#"><DirectboxSend color="currentColor" size={24} className="w-5 h-5" variant="Outline" /></a>
             </div>
           </div>
           

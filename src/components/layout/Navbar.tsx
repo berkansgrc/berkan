@@ -1,4 +1,5 @@
 import { NavbarClient } from "./NavbarClient";
+import { MobileTabBar } from "./MobileTabBar";
 import { getCachedUser, getCachedProfile } from "@/utils/supabase/queries";
 
 export async function Navbar() {
@@ -10,5 +11,10 @@ export async function Navbar() {
     role = profile?.role ?? null;
   }
 
-  return <NavbarClient user={user} role={role} />;
+  return (
+    <>
+      <NavbarClient user={user} role={role} />
+      <MobileTabBar user={user} />
+    </>
+  );
 }

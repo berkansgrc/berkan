@@ -34,7 +34,7 @@ export default async function AdminLayout({
       <AdminSidebar fullName={profile.full_name} email={user.email!} />
 
       {/* Main Content */}
-      <main className="flex-1 relative z-10 overflow-auto">
+      <main className="flex-1 relative z-10 overflow-auto lg:ml-72 w-full">
         {children}
       </main>
     </div>

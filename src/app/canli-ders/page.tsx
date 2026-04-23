@@ -13,9 +13,10 @@ export const revalidate = 60;
 export default async function CanliDersPage() {
   // getCachedUser + live_stream_config paralel çal›ş›r — seri değil
   const supabase = await createClient();
-  const [user, { data: config }] = await Promise.all([
+  const [user, { data: config }, { data: schedule }] = await Promise.all([
     getCachedUser(),
     supabase.from("live_stream_config").select("*").single(),
+    supabase.from("live_schedule").select("*").order("display_order", { ascending: true }),
   ]);
 
   const isLive = config?.is_live ?? false;
@@ -201,21 +202,21 @@ export default async function CanliDersPage() {
                 <h3 className="font-heading font-black text-foreground">Ders Takvimi</h3>
               </div>
               <div className="space-y-3">
-                {[
-                  { day: "Pazartesi", time: "19:00", topic: "Türev Uygulamaları", level: "TYT" },
-                  { day: "Çarşamba", time: "19:00", topic: "İntegral Başlangıç", level: "AYT" },
-                  { day: "Cuma", time: "20:00", topic: "Geometri Soru Çözümü", level: "LGS" },
-                ].map((lesson) => (
-                  <div key={lesson.day} className="flex items-center justify-between p-3 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors">
-                    <div>
-                      <p className="text-xs font-black text-primary uppercase tracking-wide">{lesson.day} · {lesson.time}</p>
-                      <p className="font-semibold text-foreground text-sm mt-0.5">{lesson.topic}</p>
+                {schedule && schedule.length > 0 ? (
+                  schedule.map((lesson: any) => (
+                    <div key={lesson.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors">
+                      <div>
+                        <p className="text-xs font-black text-primary uppercase tracking-wide">{lesson.day_name} · {lesson.lesson_time}</p>
+                        <p className="font-semibold text-foreground text-sm mt-0.5">{lesson.topic}</p>
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-widest bg-background border border-border px-2 py-1 rounded-lg text-muted-foreground">
+                        {lesson.level}
+                      </span>
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest bg-background border border-border px-2 py-1 rounded-lg text-muted-foreground">
-                      {lesson.level}
-                    </span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-xs text-muted-foreground italic text-center py-4">Henüz ders programı eklenmedi.</p>
+                )}
               </div>
             </div>
           </div>

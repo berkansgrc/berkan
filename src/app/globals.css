@@ -150,7 +150,12 @@
 
 @layer utilities {
   .glass-card { 
-    @apply bg-white/40 backdrop-blur-xl border border-white/60;
+    @apply bg-white/40 backdrop-blur-xl border border-white/60 transition-all duration-500;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  }
+  .glass-card:hover {
+    @apply border-white;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.4);
   }
   .organic-blob { 
     border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; 
@@ -160,6 +165,10 @@
   }
   .math-icon-bg { 
     background: radial-gradient(circle at center, rgba(154, 235, 228, 0.4) 0%, transparent 70%); 
+  }
+  .spatial-depth {
+    perspective: 1000px;
+    transform-style: preserve-3d;
   }
 
   /* ── Premium Micro-interaction Utilities ── */

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock, Globe, Lock, ArrowRight, Play } from "lucide-react";
+import { Clock, Global, Lock, Play } from "iconsax-react";
 import type { ExamSearchItem } from "@/lib/fuse";
 
 type Props = {
@@ -24,9 +24,9 @@ export default function ExamCard({ exam }: Props) {
               }`}
              >
               {isPublic ? (
-                <><Globe className="h-3.5 w-3.5 text-primary" /> Herkese Açık</>
+                <><Global color="currentColor" size={24} className="h-3.5 w-3.5 text-primary" variant="Bold" /> Herkese Açık</>
               ) : (
-                <><Lock className="h-3.5 w-3.5" /> Özel Sınav</>
+                <><Lock color="currentColor" size={24} className="h-3.5 w-3.5" variant="Outline" /> Özel Sınav</>
               )}
              </span>
          </div>
@@ -45,13 +45,13 @@ export default function ExamCard({ exam }: Props) {
 
          <div className="flex flex-col gap-4 mt-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground bg-input/40 self-start px-3 py-1.5 rounded-lg border border-border/50">
-               <Clock className="h-4 w-4 text-primary" />
+               <Clock color="currentColor" size={24} className="h-4 w-4 text-primary" variant="Outline" />
                <span>{exam.duration_minutes} Dakika</span>
             </div>
 
             <Link href={`/exams/${exam.id}`} className="w-full mt-2">
               <button className="w-full group/btn bg-gradient-to-br from-primary to-[#005a55] text-primary-foreground font-heading font-bold text-[15px] h-12 rounded-[1rem] shadow-[0_8px_16px_rgba(0,103,98,0.2)] hover:shadow-[0_12px_24px_rgba(0,103,98,0.3)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border-0">
-                 <Play className="w-4 h-4 fill-primary-foreground group-hover/btn:scale-110 transition-transform" />
+                 <Play color="currentColor" size={24} className="w-4 h-4 text-primary-foreground group-hover/btn:scale-110 transition-transform" variant="Bold" />
                  <span>Hemen Çöz</span>
               </button>
             </Link>

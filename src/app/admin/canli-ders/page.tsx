@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import AdminLiveStreamForm from "@/components/admin/AdminLiveStreamForm";
 import AdminPollManager from "@/components/admin/AdminPollManager";
-import { ArrowLeft, Radio } from "lucide-react";
+import AdminLiveScheduleManager from "@/components/admin/AdminLiveScheduleManager";
+import { ArrowLeft, Radio, Calendar } from "lucide-react";
 
 export const metadata = {
   title: "Canlı Ders Yönetimi | Admin",
@@ -40,6 +41,16 @@ export default async function AdminCanliDersPage() {
 
       {/* Canlı Anket Yönetimi */}
       <AdminPollManager />
+
+      {/* Bölücü */}
+      <div className="my-10 border-t border-border/50" />
+
+      {/* Ders Takvimi Yönetimi */}
+      <div className="flex items-center gap-2 mb-6">
+        <Calendar className="w-5 h-5 text-secondary" />
+        <h2 className="text-2xl font-heading font-extrabold text-foreground">Ders Takvimi Yönetimi</h2>
+      </div>
+      <AdminLiveScheduleManager />
     </div>
   );
 }

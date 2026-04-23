@@ -9,19 +9,19 @@ import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import {
   Video,
-  FileText,
-  AppWindow,
+  DocumentText,
+  Monitor,
   PlayCircle,
-  ExternalLink,
-  ChevronRight,
-  ChevronDown,
-  BookOpen,
-  AlertTriangle,
-  Search,
-  X,
-  MessageCircleQuestion,
-  GraduationCap
-} from "lucide-react";
+  Export,
+  ArrowRight2,
+  ArrowDown2,
+  Book,
+  Warning2,
+  SearchNormal,
+  CloseCircle,
+  MessageQuestion,
+  Teacher
+} from "iconsax-react";
 import StudentQuizModal from "./StudentQuizModal";
 
 interface Topic {
@@ -115,8 +115,8 @@ export default function LessonViewer({
 
   const tabs = selectedContent ? [
     { key: "video" as const, label: "Video", icon: Video, available: !!youtubeId },
-    { key: "pdf" as const, label: "Doküman", icon: FileText, available: !!driveEmbedUrl },
-    { key: "app" as const, label: "Uygulama", icon: AppWindow, available: !!selectedContent.app_url },
+    { key: "pdf" as const, label: "Doküman", icon: DocumentText, available: !!driveEmbedUrl },
+    { key: "app" as const, label: "Uygulama", icon: Monitor, available: !!selectedContent.app_url },
   ].filter((t) => t.available) : [];
 
   return (
@@ -141,7 +141,7 @@ export default function LessonViewer({
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    <tab.icon className="w-4 h-4" />
+                    <tab.icon className="w-4 h-4" variant={activeTab === tab.key ? "Bold" : "Outline"} />
                     {tab.label}
                   </button>
                 ))}
@@ -201,7 +201,7 @@ export default function LessonViewer({
                     </div>
                   ) : (
                     <div className="aspect-[4/3] w-full bg-muted/20 flex flex-col items-center justify-center gap-4 p-8">
-                      <AlertTriangle className="w-10 h-10 text-yellow-500" />
+                      <Warning2 color="currentColor" size={24} className="w-10 h-10 text-yellow-500" variant="Bold" />
                       <p className="font-heading font-bold text-foreground text-center">
                         Bu uygulama site içinde görüntülenemiyor.
                       </p>
@@ -211,7 +211,7 @@ export default function LessonViewer({
                         rel="noopener noreferrer"
                         className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm hover:opacity-90 transition-opacity"
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        <Export color="currentColor" size={24} className="w-4 h-4" variant="Outline" />
                         Yeni Sekmede Aç
                       </a>
                     </div>
@@ -228,7 +228,7 @@ export default function LessonViewer({
                         rel="noopener noreferrer"
                         className="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
                       >
-                        <ExternalLink className="w-3 h-3" />
+                        <Export color="currentColor" size={24} className="w-3 h-3" variant="Outline" />
                         Yeni Sekmede Aç
                       </a>
                     </div>
@@ -271,7 +271,7 @@ export default function LessonViewer({
                   onClick={() => setIsQuizModalOpen(true)}
                   className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold hover:bg-orange-500/20 transition-colors shadow-sm"
                 >
-                   <GraduationCap className="w-5 h-5" />
+                   <Teacher color="currentColor" size={24} className="w-5 h-5" variant="Bold" />
                    Mini Teste Başla
                 </button>
               </div>
@@ -293,7 +293,7 @@ export default function LessonViewer({
                       className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl p-4 text-left hover:bg-primary/5 hover:border-primary/30 transition-all"
                     >
                       <div className="w-10 h-10 rounded-xl bg-muted/40 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-                        <ChevronRight className="w-5 h-5 text-muted-foreground rotate-180 group-hover:text-primary transition-colors" />
+                        <ArrowRight2 color="currentColor" size={24} className="w-5 h-5 text-muted-foreground rotate-180 group-hover:text-primary transition-colors" variant="Outline" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Önceki Ders</p>
@@ -321,7 +321,7 @@ export default function LessonViewer({
                         <p className="text-[11px] text-muted-foreground truncate">{getTopicName(nextContent.topic_id)}</p>
                       </div>
                       <div className="w-10 h-10 rounded-xl bg-muted/40 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <ArrowRight2 color="currentColor" size={24} className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" variant="Outline" />
                       </div>
                     </button>
                   ) : (
@@ -333,7 +333,7 @@ export default function LessonViewer({
           </>
         ) : (
           <div className="aspect-video w-full rounded-[1.75rem] border border-border/50 bg-card/60 backdrop-blur-xl flex flex-col items-center justify-center text-muted-foreground shadow-sm">
-             <BookOpen className="w-12 h-12 mb-4 opacity-50 text-primary" />
+             <Book color="currentColor" size={24} className="w-12 h-12 mb-4 opacity-50 text-primary" variant="Bold" />
              <p className="font-heading font-bold text-lg">Sağ taraftan bir içerik seçin</p>
           </div>
         )}
@@ -348,7 +348,7 @@ export default function LessonViewer({
 
         {/* Arama Çubuğu */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <SearchNormal color="currentColor" size={24} className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" variant="Outline" />
           <input
             type="text"
             placeholder="Konu veya materyal ara…"
@@ -361,7 +361,7 @@ export default function LessonViewer({
               onClick={() => setSearchQuery("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
             >
-              <X className="w-3.5 h-3.5 text-muted-foreground" />
+              <CloseCircle color="currentColor" size={24} className="w-3.5 h-3.5 text-muted-foreground" variant="Bold" />
             </button>
           )}
         </div>
@@ -380,7 +380,7 @@ export default function LessonViewer({
             if (q && filteredTopics.length === 0) {
               return (
                 <div className="px-5 py-8 text-center">
-                  <Search className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+                  <SearchNormal color="currentColor" size={24} className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" variant="Outline" />
                   <p className="text-sm font-heading font-bold text-muted-foreground">
                     &ldquo;{searchQuery}&rdquo; ile eşleşen sonuç bulunamadı.
                   </p>
@@ -416,9 +416,9 @@ export default function LessonViewer({
                          </div>
                      </div>
                      {isExpanded ? (
-                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        <ArrowDown2 color="currentColor" size={24} className="w-4 h-4 text-muted-foreground" variant="Outline" />
                      ) : (
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        <ArrowRight2 color="currentColor" size={24} className="w-4 h-4 text-muted-foreground" variant="Outline" />
                      )}
                   </button>
 
@@ -450,7 +450,7 @@ export default function LessonViewer({
                                    </div>
                                 ) : (
                                    <div className="w-8 h-8 rounded-md bg-muted/50 flex items-center justify-center shrink-0">
-                                      {content.video_url ? <Video className="w-4 h-4 text-muted-foreground" /> : <FileText className="w-4 h-4 text-muted-foreground" />}
+                                      {content.video_url ? <Video color="currentColor" size={24} className="w-4 h-4 text-muted-foreground" variant="Outline" /> : <DocumentText color="currentColor" size={24} className="w-4 h-4 text-muted-foreground" variant="Outline" />}
                                    </div>
                                 )}
                                 
@@ -461,12 +461,12 @@ export default function LessonViewer({
                                     {content.title}
                                   </p>
                                   <div className="flex items-center gap-2 mt-1">
-                                    {content.video_url && <Video className={`w-3 h-3 ${isSelected ? "text-red-500" : "text-muted-foreground"}`} />}
-                                    {content.drive_file_url && <FileText className={`w-3 h-3 ${isSelected ? "text-blue-500" : "text-muted-foreground"}`} />}
-                                    {content.app_url && <AppWindow className={`w-3 h-3 ${isSelected ? "text-violet-500" : "text-muted-foreground"}`} />}
+                                    {content.video_url && <Video color="currentColor" size={24} className={`w-3 h-3 ${isSelected ? "text-red-500" : "text-muted-foreground"}`} variant="Bold" />}
+                                    {content.drive_file_url && <DocumentText color="currentColor" size={24} className={`w-3 h-3 ${isSelected ? "text-blue-500" : "text-muted-foreground"}`} variant="Bold" />}
+                                    {content.app_url && <Monitor color="currentColor" size={24} className={`w-3 h-3 ${isSelected ? "text-violet-500" : "text-muted-foreground"}`} variant="Bold" />}
                                   </div>
                                 </div>
-                                {isSelected && <PlayCircle className="w-4 h-4 text-primary flex-shrink-0 mt-1" />}
+                                {isSelected && <PlayCircle color="currentColor" size={24} className="w-4 h-4 text-primary flex-shrink-0 mt-1" variant="Bold" />}
                               </button>
                             );
                           })}
