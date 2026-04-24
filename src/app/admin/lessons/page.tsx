@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { Plus, Trash2, Video, Users, Calendar, Clock, Search, School } from "lucide-react";
 
 export default function AdminLessonsPage() {
-  const [lessons, setLessons] = useState<any[]>([]);
-  const [students, setStudents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+  const supabase = createClient();
 
   // Form State
   const [title, setTitle] = useState("");
@@ -21,66 +20,46 @@ export default function AdminLessonsPage() {
   const [studentIds, setStudentIds] = useState<string[]>([]);
   const [targetGroup, setTargetGroup] = useState("");
 
-  const supabase = createClient();
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // Dersleri çek (Öğrenci isimleriyle joinli gibi manuel yapacağız çünkü relationships bazen sorunlu olur)
-      const { data: lessonsData, error: lError } = await supabase
+  const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
+    queryKey: ['adminLessons'],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from("private_lessons")
         .select(`*, profiles(full_name)`)
         .order("start_time", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    }
+  });
 
-      if (lError) throw lError;
-      setLessons(lessonsData || []);
-
-      // Öğrencileri çek
-      const { data: studentsData, error: sError } = await supabase
+  const { data: students = [], isLoading: studentsLoading } = useQuery({
+    queryKey: ['students'],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from("profiles")
         .select("id, full_name")
         .eq("role", "student")
         .order("full_name");
-
-      if (sError) throw sError;
-      setStudents(studentsData || []);
-    } catch (error) {
-      console.error(error);
-      alert("Veri çekilirken hata oluştu.");
-    } finally {
-      setLoading(false);
+      if (error) throw error;
+      return data || [];
     }
-  };
+  });
 
-  const handleCreateLesson = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
+  const loading = lessonsLoading || studentsLoading;
+
+  const createLessonMutation = useMutation({
+    mutationFn: async (newLesson: any) => {
       const res = await fetch("/api/admin/lessons", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          start_time: new Date(startTime).toISOString(),
-          end_time: new Date(endTime).toISOString(),
-          meet_url: meetUrl,
-          is_private: isPrivate,
-          student_ids: studentIds,
-          target_group: targetGroup || null,
-        }),
+        body: JSON.stringify(newLesson),
       });
-
       if (!res.ok) throw new Error("Ders oluşturulamadı");
-
+      return res.json();
+    },
+    onSuccess: () => {
       alert("Ders başarıyla planlandı!");
-      fetchData(); // Yenile
-      
-      // Formu temizle
+      queryClient.invalidateQueries({ queryKey: ['adminLessons'] });
       setTitle("");
       setDescription("");
       setStartTime("");
@@ -89,24 +68,44 @@ export default function AdminLessonsPage() {
       setIsPrivate(false);
       setStudentIds([]);
       setTargetGroup("");
-    } catch (error: any) {
+    },
+    onError: (error: Error) => {
       alert(error.message);
-    } finally {
-      setSubmitting(false);
     }
+  });
+
+  const handleCreateLesson = (e: React.FormEvent) => {
+    e.preventDefault();
+    createLessonMutation.mutate({
+      title,
+      description,
+      start_time: new Date(startTime).toISOString(),
+      end_time: new Date(endTime).toISOString(),
+      meet_url: meetUrl,
+      is_private: isPrivate,
+      student_ids: studentIds,
+      target_group: targetGroup || null,
+    });
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Dersi silmek istediğinize emin misiniz?")) return;
-    try {
+  const deleteLessonMutation = useMutation({
+    mutationFn: async (id: string) => {
       const res = await fetch(`/api/admin/lessons?id=${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Silinirken hata oluştu");
-      fetchData();
-    } catch (error: any) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminLessons'] });
+    },
+    onError: (error: Error) => {
       alert(error.message);
     }
+  });
+
+  const handleDelete = (id: string) => {
+    if (!confirm("Dersi silmek istediğinize emin misiniz?")) return;
+    deleteLessonMutation.mutate(id);
   };
 
   return (
@@ -244,10 +243,10 @@ export default function AdminLessonsPage() {
 
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={createLessonMutation.isPending}
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 mt-4 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
               >
-                {submitting ? "Planlanıyor..." : "Dersi Oluştur"}
+                {createLessonMutation.isPending ? "Planlanıyor..." : "Dersi Oluştur"}
               </button>
             </form>
           </div>

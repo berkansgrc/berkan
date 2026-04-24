@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -150,7 +150,7 @@ export default function LessonViewer({
 
             {/* İçerik Embed Alanı */}
             <AnimatePresence mode="wait">
-              <motion.div
+              <m.div
                 key={activeTab + (selectedContent?.id || "empty")}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -244,7 +244,7 @@ export default function LessonViewer({
                   </p>
                 </div>
               )}
-              </motion.div>
+              </m.div>
             </AnimatePresence>
 
             {/* İçerik Bilgisi */}
@@ -425,7 +425,7 @@ export default function LessonViewer({
                   {/* Contents inside Topic */}
                   <AnimatePresence initial={false}>
                     {isExpanded && (
-                       <motion.div 
+                       <m.div 
                          initial={{ height: 0, opacity: 0 }}
                          animate={{ height: "auto", opacity: 1 }}
                          exit={{ height: 0, opacity: 0 }}
@@ -475,7 +475,7 @@ export default function LessonViewer({
                                 Bu konuya henüz içerik eklenmemiş.
                              </div>
                           )}
-                       </motion.div>
+                       </m.div>
                     )}
                   </AnimatePresence>
                </div>

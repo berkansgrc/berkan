@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import ExamTimer from "@/components/exam/ExamTimer";
 import QuestionCard from "@/components/exam/QuestionCard";
 import { Button } from "@/components/ui/button";
@@ -66,17 +67,26 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
     timeLogsRef.current = timeLogs;
   }, [timeLogs, storageKey]);
 
+  const saveProgressMutation = useMutation({
+    mutationFn: async (currentAnswers: Record<string, string | null>) => {
+      const res = await fetch("/api/exams/save-progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resultId, answers: currentAnswers }),
+      });
+      if (!res.ok) throw new Error("Auto-save failed");
+      return res.json();
+    },
+    onError: (err) => console.error("Auto-save failed", err),
+  });
+
   // Arka planda periyodik kaydetme (Heartbeat) - 30 saniyede bir
   useEffect(() => {
     const interval = setInterval(() => {
-      fetch("/api/exams/save-progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resultId, answers: answersRef.current }),
-      }).catch(err => console.error("Auto-save failed", err));
+      saveProgressMutation.mutate(answersRef.current);
     }, 30000);
     return () => clearInterval(interval);
-  }, [resultId]);
+  }, [resultId, saveProgressMutation]);
 
   // Süre Takibi (Her 1 saniyede aktif sorunun süresini artır)
   useEffect(() => {
@@ -162,30 +172,30 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
     });
   }, []);
 
-  const handleSubmit = useCallback(async () => {
-    if (submitting) return;
-    setSubmitting(true);
-
-    try {
+  const submitExamMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch("/api/exams/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resultId, answers: answersRef.current, examId: exam.id }),
       });
-
-      if (res.ok) {
-        localStorage.removeItem(storageKey + "_answers");
-        localStorage.removeItem(storageKey + "_times");
-        router.push(`/exams/result/${resultId}`);
-      } else {
-        alert("Sınav gönderilirken bir sorun oluştu. Lütfen bağlantınızı kontrol edip tekrar deneyin.");
-        setSubmitting(false);
-      }
-    } catch {
-      alert("Ağ bağlantısı hatası! Lütfen internet bağlantınızı kontrol edip tekrar deneyin.");
-      setSubmitting(false);
+      if (!res.ok) throw new Error("Submit failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      localStorage.removeItem(storageKey + "_answers");
+      localStorage.removeItem(storageKey + "_times");
+      router.push(`/exams/result/${resultId}`);
+    },
+    onError: () => {
+      alert("Sınav gönderilirken bir sorun oluştu veya ağ bağlantısı hatası var.");
     }
-  }, [submitting, resultId, exam.id, storageKey, router]);
+  });
+
+  const handleSubmit = useCallback(() => {
+    if (submitExamMutation.isPending) return;
+    submitExamMutation.mutate();
+  }, [submitExamMutation]);
 
   const question = questions[current];
 
@@ -246,10 +256,10 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
              </div>
              <Button
                 onClick={handleSubmit}
-                disabled={submitting}
+                disabled={submitExamMutation.isPending}
                 className="rounded-xl font-heading font-bold px-6 bg-gradient-to-br from-primary to-[#005a55] text-primary-foreground border-0 shadow-[0_8px_16px_rgba(0,103,98,0.2)] hover:shadow-[0_12px_24px_rgba(0,103,98,0.3)] hover:-translate-y-0.5 transition-all"
               >
-                {submitting ? "Gönderiliyor..." : "Sınavı Bitir"}
+                {submitExamMutation.isPending ? "Gönderiliyor..." : "Sınavı Bitir"}
               </Button>
           </div>
         </div>

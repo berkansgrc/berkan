@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { m, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef, ReactNode, MouseEvent } from "react";
 
 interface MagneticButtonProps {
@@ -46,7 +46,7 @@ export default function MagneticButton({
   };
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -57,6 +57,6 @@ export default function MagneticButton({
       whileTap={{ scale: 0.95 }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

@@ -4,7 +4,9 @@ import Link from "next/link";
 import AdminLiveStreamForm from "@/components/admin/AdminLiveStreamForm";
 import AdminPollManager from "@/components/admin/AdminPollManager";
 import AdminLiveScheduleManager from "@/components/admin/AdminLiveScheduleManager";
-import { ArrowLeft, Radio, Calendar } from "lucide-react";
+import PollResultsPanel from "@/components/admin/PollResultsPanel";
+import { ArrowLeft } from "iconsax-react";
+import { Radio, Calendar } from "lucide-react";
 
 export const metadata = {
   title: "Canlı Ders Yönetimi | Admin",
@@ -23,8 +25,8 @@ export default async function AdminCanliDersPage() {
   return (
     <div className="p-6 lg:p-10 pb-24 lg:pb-10 relative z-10 max-w-3xl">
       <div className="flex items-center gap-4 mb-10">
-        <Link href="/admin/exams" className="w-10 h-10 rounded-full bg-input/50 border border-border/50 flex items-center justify-center hover:bg-muted transition-colors">
-          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+        <Link href="/admin" className="w-10 h-10 rounded-full bg-input/50 border border-border/50 flex items-center justify-center hover:bg-muted transition-colors">
+          <ArrowLeft className="w-5 h-5 text-muted-foreground" variant="Outline" />
         </Link>
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -34,6 +36,24 @@ export default async function AdminCanliDersPage() {
           <p className="text-muted-foreground text-sm font-medium">YouTube canlı yayınını buradan yönet ve aktif et.</p>
         </div>
       </div>
+
+      {/* Canlı Kontrol Paneli Linki */}
+      <Link
+        href="/admin/canli-ders/dashboard"
+        className="mb-8 flex items-center justify-between p-5 rounded-[1.5rem] border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Radio className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <p className="font-heading font-black text-sm text-foreground">Canlı Kontrol Paneli</p>
+            <p className="text-xs text-muted-foreground font-medium">Ders sırasında tek ekrandan her şeyi yönet.</p>
+          </div>
+        </div>
+        <ArrowLeft className="w-5 h-5 text-primary rotate-180" variant="Outline" />
+      </Link>
+
       <AdminLiveStreamForm initialConfig={config} />
 
       {/* Bölücü */}
@@ -41,6 +61,12 @@ export default async function AdminCanliDersPage() {
 
       {/* Canlı Anket Yönetimi */}
       <AdminPollManager />
+
+      {/* Bölücü */}
+      <div className="my-10 border-t border-border/50" />
+
+      {/* Anket Sonuçları */}
+      <PollResultsPanel />
 
       {/* Bölücü */}
       <div className="my-10 border-t border-border/50" />
@@ -54,3 +80,4 @@ export default async function AdminCanliDersPage() {
     </div>
   );
 }
+

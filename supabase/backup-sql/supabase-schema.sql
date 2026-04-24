@@ -82,13 +82,28 @@ ALTER TABLE exams         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE questions     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE exam_results  ENABLE ROW LEVEL SECURITY;
 
+-- ============================================================
+-- Güvenli Rol Kontrol Fonksiyonları
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
+  );
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
+
+CREATE OR REPLACE FUNCTION public.is_teacher_or_admin()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'teacher')
+  );
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
+
 -- Profiles: Herkes kendi profilini okur, admin hepsini okur
--- NOT: auth.jwt() kullanarak profiles tablosuna tekrar sorgu atmıyoruz (sonsuz döngü engellenir)
 DROP POLICY IF EXISTS "profiles_self_read" ON profiles;
 CREATE POLICY "profiles_self_read" ON profiles
   FOR SELECT USING (
-    id = auth.uid()
-    OR (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    id = auth.uid() OR public.is_admin()
   );
 
 DROP POLICY IF EXISTS "profiles_self_update" ON profiles;
@@ -104,8 +119,7 @@ CREATE POLICY "exams_public_read" ON exams
 DROP POLICY IF EXISTS "exams_owner_all" ON exams;
 CREATE POLICY "exams_owner_all" ON exams
   FOR ALL USING (
-    created_by = auth.uid() OR
-    (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+    created_by = auth.uid() OR public.is_admin()
   );
 
 -- Questions: Sınav sahipleri sorularını yönetir
@@ -113,9 +127,7 @@ DROP POLICY IF EXISTS "questions_exam_owner" ON questions;
 CREATE POLICY "questions_exam_owner" ON questions
   FOR ALL USING (
     exam_id IN (
-      SELECT id FROM exams WHERE
-        created_by = auth.uid() OR
-        (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
+      SELECT id FROM exams WHERE created_by = auth.uid() OR public.is_admin()
     )
   );
 
@@ -130,8 +142,7 @@ CREATE POLICY "questions_public_read" ON questions
 DROP POLICY IF EXISTS "results_self_read" ON exam_results;
 CREATE POLICY "results_self_read" ON exam_results
   FOR SELECT USING (
-    user_id = auth.uid() OR
-    (auth.jwt() -> 'user_metadata' ->> 'role') IN ('admin', 'teacher')
+    user_id = auth.uid() OR public.is_teacher_or_admin()
   );
 
 DROP POLICY IF EXISTS "results_insert" ON exam_results;
@@ -193,7 +204,7 @@ CREATE POLICY "polls_read" ON live_polls FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "polls_admin_all" ON live_polls;
 CREATE POLICY "polls_admin_all" ON live_polls FOR ALL USING (
-  (auth.jwt() -> 'user_metadata' ->> 'role') IN ('admin', 'teacher')
+  public.is_teacher_or_admin()
 );
 
 -- Anket oyları: Herkes kendi oyunu verir, sonuçlar herkese açık
@@ -212,7 +223,7 @@ CREATE POLICY "questions_insert" ON live_questions FOR INSERT WITH CHECK (user_i
 
 DROP POLICY IF EXISTS "questions_admin_update" ON live_questions;
 CREATE POLICY "questions_admin_update" ON live_questions FOR UPDATE USING (
-  user_id = auth.uid() OR (auth.jwt() -> 'user_metadata' ->> 'role') IN ('admin', 'teacher')
+  user_id = auth.uid() OR public.is_teacher_or_admin()
 );
 
 -- Upvote'lar: Herkes okur, giriş yapmış herkes verir

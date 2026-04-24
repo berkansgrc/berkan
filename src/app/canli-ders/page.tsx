@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { Radio, Users, Calendar, ArrowRight, Lock, Bell, Play, Wifi, WifiOff } from "lucide-react";
 import { getCachedUser } from "@/utils/supabase/queries";
+import LessonCountdown from "@/components/live/LessonCountdown";
 
 export const metadata = {
   title: "Canlı Dersler | Berkan Matematik",
@@ -98,17 +99,24 @@ export default async function CanliDersPage() {
                   </div>
 
                   <div className="relative z-10 flex flex-col items-center gap-6 text-center px-8">
-                    <div className="w-20 h-20 rounded-[1.5rem] bg-muted border border-border flex items-center justify-center">
-                      <Radio className="w-10 h-10 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-xl font-heading font-black text-foreground">Şu an canlı ders yok</p>
-                      <p className="text-muted-foreground mt-2 text-sm font-medium max-w-sm">
-                        {scheduledAt
-                          ? `Sonraki ders: ${scheduledAt.toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}`
-                          : "Yakında canlı ders başlayacak. Bildirimleri aç."}
-                      </p>
-                    </div>
+                    {scheduledAt ? (
+                      <LessonCountdown
+                        scheduledAt={scheduledAt.toISOString()}
+                        lessonTitle={lessonTitle}
+                      />
+                    ) : (
+                      <>
+                        <div className="w-20 h-20 rounded-[1.5rem] bg-muted border border-border flex items-center justify-center">
+                          <Radio className="w-10 h-10 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="text-xl font-heading font-black text-foreground">Şu an canlı ders yok</p>
+                          <p className="text-muted-foreground mt-2 text-sm font-medium max-w-sm">
+                            Yakında canlı ders başlayacak. Bildirimleri aç.
+                          </p>
+                        </div>
+                      </>
+                    )}
 
                     {!user ? (
                       <Link href="/register">
@@ -219,6 +227,23 @@ export default async function CanliDersPage() {
                 )}
               </div>
             </div>
+
+            {/* Ders Arşivi Linki */}
+            <Link
+              href="/canli-ders/arsiv"
+              className="block rounded-[1.5rem] border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 backdrop-blur-xl p-5 shadow-sm transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Play className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <p className="font-heading font-black text-sm text-foreground">Ders Arşivi</p>
+                  <p className="text-[11px] text-muted-foreground font-medium">Geçmiş dersleri tekrar izle</p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-amber-500 ml-auto" />
+              </div>
+            </Link>
           </div>
 
         </div>

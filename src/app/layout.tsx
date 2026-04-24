@@ -3,6 +3,9 @@ import { Plus_Jakarta_Sans, Manrope, Caveat } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { FeedbackButton } from "@/components/ui/FeedbackButton";
+import { LazyMotionProvider } from "@/components/providers/LazyMotionProvider";
+import QueryProvider from "@/components/providers/QueryProvider";
 import "@/env"; // Çevre değişkenlerini başlangıçta doğrula
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -27,8 +30,41 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "Berkan Matematik - Modern Eğitim Platformu",
-  description: "Öğrenciler için interaktif ve modern matematik eğitimi.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://berkanmatematik.com'),
+  title: {
+    default: "Berkan Matematik - Yeni Nesil Matematik Platformu",
+    template: "%s | Berkan Matematik",
+  },
+  description: "Matematiği sadece işlem olarak değil, düşüncenin mimarisi olarak öğreten interaktif ve modern eğitim platformu. 'Hata Güzeldir' mottosuyla öğrenmeyi yeniden keşfedin.",
+  keywords: ["matematik", "online matematik", "yks matematik", "berkan matematik", "matematik eğitimi", "yeni nesil matematik", "interaktif eğitim"],
+  authors: [{ name: "Berkan Sığırcı" }],
+  creator: "Berkan Sığırcı",
+  publisher: "Berkan Matematik",
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: "https://berkanmatematik.com",
+    title: "Berkan Matematik - Yeni Nesil Matematik Platformu",
+    description: "Matematiği sadece işlem olarak değil, düşüncenin mimarisi olarak öğreten interaktif ve modern eğitim platformu.",
+    siteName: "Berkan Matematik",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Berkan Matematik - Yeni Nesil Matematik Platformu",
+    description: "Matematiği sadece işlem olarak değil, düşüncenin mimarisi olarak öğreten interaktif ve modern eğitim platformu.",
+    creator: "@berkansigirci",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -42,9 +78,14 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${manrope.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="font-sans min-h-full flex flex-col">
-        <Navbar />
-        <main className="flex-1 flex flex-col pb-16 md:pb-0">{children}</main>
-        <Footer />
+        <QueryProvider>
+          <LazyMotionProvider>
+            <Navbar />
+            <main className="flex-1 flex flex-col pb-16 md:pb-0">{children}</main>
+            <Footer />
+            <FeedbackButton />
+          </LazyMotionProvider>
+        </QueryProvider>
       </body>
     </html>
   );

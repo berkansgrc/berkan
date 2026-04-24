@@ -26,8 +26,17 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ gradeSlug: string }> }) {
   const { gradeSlug } = await params;
   const gradeLabel = GRADES.find((g) => g.value === gradeSlug)?.label || "Sınıf";
+  const title = `${gradeLabel} Matematik Dersleri | Berkan Matematik`;
+  const description = `${gradeLabel} seviyesi için özel olarak hazırlanmış, MEB müfredatına uygun interaktif matematik dersleri, testler ve eğitim materyalleri.`;
+  
   return {
-    title: `${gradeLabel} Matematik | Berkan Matematik`,
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      type: "website",
+    },
   };
 }
 

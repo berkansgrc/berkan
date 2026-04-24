@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import CommandPalette from "@/components/admin/CommandPalette";
 
 export default async function AdminLayout({
   children,
@@ -33,6 +34,9 @@ export default async function AdminLayout({
       {/* Sidebar */}
       <AdminSidebar fullName={profile.full_name} email={user.email!} />
 
+      {/* Command Palette — erişilebilir Cmd+K kısayolu */}
+      <CommandPalette />
+
       {/* Main Content */}
       <main className="flex-1 relative z-10 overflow-auto lg:ml-72 w-full">
         {children}
@@ -40,3 +44,4 @@ export default async function AdminLayout({
     </div>
   );
 }
+

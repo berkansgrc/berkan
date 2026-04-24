@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { X, CheckCircle2, XCircle, AlertCircle, ChevronRight, Loader2, RefreshCcw } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
@@ -99,7 +99,7 @@ export default function StudentQuizModal({ contentId, isOpen, onClose }: Student
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-12">
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -107,7 +107,7 @@ export default function StudentQuizModal({ contentId, isOpen, onClose }: Student
             onClick={onClose}
           />
           
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -138,7 +138,7 @@ export default function StudentQuizModal({ contentId, isOpen, onClose }: Student
                   <p className="font-medium">Bu içeriğe henüz test eklenmemiş.</p>
                 </div>
               ) : isFinished ? (
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="flex flex-col items-center justify-center py-10 text-center"
@@ -158,7 +158,7 @@ export default function StudentQuizModal({ contentId, isOpen, onClose }: Student
                       <CheckCircle2 className="w-4 h-4" /> Bitir
                     </button>
                   </div>
-                </motion.div>
+                </m.div>
               ) : (
                 <div className="space-y-8">
                   {/* Progress */}
@@ -221,7 +221,7 @@ export default function StudentQuizModal({ contentId, isOpen, onClose }: Student
                   {/* Explanation */}
                   <AnimatePresence>
                     {isAnswered && questions[currentIndex].explanation && (
-                      <motion.div
+                      <m.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
@@ -235,13 +235,13 @@ export default function StudentQuizModal({ contentId, isOpen, onClose }: Student
                              </ReactMarkdown>
                           </div>
                         </div>
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
 
                   {/* Next Button */}
                   {isAnswered && (
-                    <motion.div
+                    <m.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="pt-4 flex justify-end"
@@ -253,12 +253,12 @@ export default function StudentQuizModal({ contentId, isOpen, onClose }: Student
                         {currentIndex < questions.length - 1 ? "Sıradaki Soru" : "Sonuçları Gör"}
                         <ChevronRight className="w-4 h-4" />
                       </button>
-                    </motion.div>
+                    </m.div>
                   )}
                 </div>
               )}
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>

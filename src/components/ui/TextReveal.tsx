@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, Variants } from "framer-motion";
+import { m, Variants } from "framer-motion";
 
 interface TextRevealProps {
   text: string;
@@ -53,7 +53,7 @@ export default function TextReveal({
   };
 
   return (
-    <motion.h1
+    <m.h1
       className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-0 ${className}`}
       variants={container}
       initial="hidden"
@@ -65,7 +65,7 @@ export default function TextReveal({
         const isHighlighted = highlightWords.includes(cleanWord);
         
         return (
-          <motion.span
+          <m.span
             variants={child}
             key={index}
             className={`inline-block [transform-style:preserve-3d] px-1 py-0.5 ${
@@ -73,9 +73,9 @@ export default function TextReveal({
             }`}
           >
             {word}
-          </motion.span>
+          </m.span>
         );
       })}
-    </motion.h1>
+    </m.h1>
   );
 }

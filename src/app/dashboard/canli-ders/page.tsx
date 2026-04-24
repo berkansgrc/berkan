@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Radio, Wifi, WifiOff, Users, MessageSquare, Pencil, ArrowLeft, Bell, Play, BookOpen } from "lucide-react";
 import LivePollWidget from "@/components/live/LivePollWidget";
 import LiveQuestionQueue from "@/components/live/LiveQuestionQueue";
+import LessonReminderBanner from "@/components/live/LessonReminderBanner";
+import LivePresenceTracker from "@/components/live/LivePresenceTracker";
 
 export const metadata = {
   title: "Canlı Dersim | Berkan Matematik",
@@ -63,10 +65,8 @@ export default async function DashboardCanliDersPage() {
                 <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${isLive ? "bg-red-500/10 border-red-500/30 text-red-500" : "bg-muted border-border text-muted-foreground"}`}>
                   {isLive ? <><Wifi className="w-3 h-3" /> CANLI</> : <><WifiOff className="w-3 h-3" /> ÇEVRIMDIŞI</>}
                 </div>
-                {isLive && viewerCount > 0 && (
-                  <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
-                    <Users className="w-3 h-3" />{viewerCount} izleyici
-                  </span>
+                {isLive && (
+                  <LivePresenceTracker userId={user.id} userName={firstName} />
                 )}
               </div>
               <h1 className="text-3xl font-heading font-extrabold tracking-tight text-foreground">Canlı Dersim</h1>
@@ -79,6 +79,16 @@ export default async function DashboardCanliDersPage() {
             <Radio className="w-4 h-4" /> Herkese açık yayın
           </Link>
         </div>
+
+        {/* Hatırlatma Banner */}
+        {!isLive && (
+          <div className="mb-6">
+            <LessonReminderBanner
+              scheduledAt={config?.scheduled_at ?? null}
+              lessonTitle={lessonTitle}
+            />
+          </div>
+        )}
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
