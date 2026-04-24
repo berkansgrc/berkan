@@ -24,7 +24,7 @@ export default async function LoginPage({
         <div className="hidden lg:flex lg:col-span-6 flex-col gap-8 order-2">
           <div className="relative z-10">
             <h1 className="font-heading font-extrabold text-5xl xl:text-[3.5rem] text-primary leading-[1.1] tracking-tight">
-              Kinetik <span className="text-secondary italic">Geometriye</span> Dönüş.
+              Eğlenerek <span className="text-secondary italic">Matematiği</span> Öğren.
             </h1>
             <div className="mt-6 flex flex-col gap-4 max-w-md">
               <p className="text-muted-foreground text-lg leading-relaxed font-sans">

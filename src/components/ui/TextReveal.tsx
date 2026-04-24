@@ -54,7 +54,7 @@ export default function TextReveal({
 
   return (
     <motion.h1
-      className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-2 ${className}`}
+      className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-0 ${className}`}
       variants={container}
       initial="hidden"
       animate="visible"
@@ -68,7 +68,7 @@ export default function TextReveal({
           <motion.span
             variants={child}
             key={index}
-            className={`inline-block [transform-style:preserve-3d] ${
+            className={`inline-block [transform-style:preserve-3d] px-1 py-0.5 ${
               isHighlighted ? highlightClass : ""
             }`}
           >

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Manrope } from "next/font/google";
+import { Plus_Jakarta_Sans, Manrope, Caveat } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -19,6 +19,13 @@ const manrope = Manrope({
   preload: true,
 });
 
+const caveat = Caveat({
+  variable: "--font-chalk",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+});
+
 export const metadata: Metadata = {
   title: "Berkan Matematik - Modern Eğitim Platformu",
   description: "Öğrenciler için interaktif ve modern matematik eğitimi.",
@@ -32,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="tr"
-      className={`${plusJakartaSans.variable} ${manrope.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} ${manrope.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="font-sans min-h-full flex flex-col">
         <Navbar />
