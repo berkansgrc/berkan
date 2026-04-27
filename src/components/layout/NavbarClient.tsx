@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { signout } from "@/app/(auth)/actions";
 import type { User } from "@supabase/supabase-js";
 import { Logout, ArrowDown2, ShieldTick, Teacher, Radio, HambergerMenu } from "iconsax-react";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 export function NavbarClient({ user, role }: { user: User | null; role: string | null }) {
   // Rol bazlı panel linki
@@ -100,6 +101,7 @@ export function NavbarClient({ user, role }: { user: User | null; role: string |
         <div className="flex items-center gap-2 sm:gap-4">
           {user ? (
             <>
+              <NotificationBell userId={user.id} />
               <span className="text-sm font-semibold font-sans text-muted-foreground hidden sm:inline-block truncate max-w-[160px] bg-input/50 px-3 py-1.5 rounded-full border border-border/50">
                 {user.email}
               </span>

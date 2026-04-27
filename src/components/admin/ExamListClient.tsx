@@ -4,14 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { m } from "framer-motion";
 import {
-  Add,
   Global,
   Lock1,
   Clock,
   Edit2,
   Category,
   Eye,
+  Copy,
 } from "iconsax-react";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import DeleteExamButton from "@/components/admin/DeleteExamButton";
 import QuickPreviewDrawer from "@/components/admin/QuickPreviewDrawer";
 
@@ -40,6 +42,21 @@ interface ExamListClientProps {
 
 export default function ExamListClient({ exams }: ExamListClientProps) {
   const [previewExam, setPreviewExam] = useState<Exam | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleDuplicate = async (examId: string) => {
+    setDuplicatingId(examId);
+    try {
+      const res = await fetch(`/api/admin/exams/${examId}/duplicate`, { method: "POST" });
+      if (res.ok) router.refresh();
+      else alert("Kopyalama başarısız.");
+    } catch {
+      alert("Bir hata oluştu.");
+    } finally {
+      setDuplicatingId(null);
+    }
+  };
 
   if (!exams || exams.length === 0) {
     return (
@@ -154,10 +171,24 @@ export default function ExamListClient({ exams }: ExamListClientProps) {
                 <Eye className="h-4 w-4" variant="Outline" />
                 <span className="hidden sm:inline">Önizle</span>
               </button>
+              <button
+                onClick={() => handleDuplicate(exam.id)}
+                disabled={duplicatingId === exam.id}
+                className="flex items-center justify-center gap-1.5 px-3 h-11 rounded-xl border border-border/50 bg-input/30 hover:bg-amber-500/5 hover:border-amber-500/20 text-muted-foreground hover:text-amber-600 font-heading font-bold text-sm transition-all active:scale-95 disabled:opacity-50"
+                title="Kopyasını Oluştur"
+              >
+                {duplicatingId === exam.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Copy className="h-4 w-4" variant="Outline" />
+                )}
+                <span className="hidden sm:inline">Kopya</span>
+              </button>
               <div className="pl-2 border-l border-border/50 flex items-center">
                 <DeleteExamButton examId={exam.id} />
               </div>
             </div>
+
           </m.div>
         ))}
       </div>

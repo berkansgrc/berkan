@@ -1,7 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Teacher, Edit } from "iconsax-react";
+import { m, AnimatePresence } from "framer-motion";
+
+/* ── Chalk Particle ── */
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  angle: number;
+}
 
 /* ── Çözüm Adımları ── */
 interface MathProblem {
@@ -49,23 +60,41 @@ export default function BerkanBoard() {
   const [problemIndex, setProblemIndex] = useState(0);
   const [visibleSteps, setVisibleSteps] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
-  const [isFading, setIsFading] = useState(false);
+  const [isWiping, setIsWiping] = useState(false);
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const particleIdRef = useRef(0);
 
   const currentProblem = PROBLEMS[problemIndex];
   const currentStepText = currentProblem.steps[visibleSteps]?.text || "";
 
+  // Spawn chalk particles when typing
+  useEffect(() => {
+    if (charIndex > 0 && charIndex < currentStepText.length) {
+      const newParticle: Particle = {
+        id: particleIdRef.current++,
+        x: 30 + Math.random() * 40,
+        y: 30 + (visibleSteps * 15),
+        size: 1.5 + Math.random() * 2.5,
+        opacity: 0.3 + Math.random() * 0.4,
+        angle: Math.random() * 360,
+      };
+      setParticles(prev => [...prev.slice(-12), newParticle]);
+    }
+  }, [charIndex]);
+
   // Typewriter effect for current step
   useEffect(() => {
     if (visibleSteps >= currentProblem.steps.length) {
-      // All steps shown — wait, then fade and move to next problem
+      // All steps shown — wait, then wipe and move to next problem
       const timeout = setTimeout(() => {
-        setIsFading(true);
+        setIsWiping(true);
         setTimeout(() => {
           setProblemIndex((prev) => (prev + 1) % PROBLEMS.length);
           setVisibleSteps(0);
           setCharIndex(0);
-          setIsFading(false);
-        }, 800);
+          setParticles([]);
+          setTimeout(() => setIsWiping(false), 50);
+        }, 600);
       }, 3000);
       return () => clearTimeout(timeout);
     }
@@ -138,9 +167,38 @@ export default function BerkanBoard() {
               <div className="w-1 h-1 bg-white/20 rounded-full" />
             </div>
 
-            <div
-              className="p-8 md:p-12 min-h-[380px] flex flex-col transition-opacity duration-700"
-              style={{ opacity: isFading ? 0 : 1 }}
+            {/* Tebeşir Parçacıkları */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {particles.map((p) => (
+                <m.div
+                  key={p.id}
+                  className="absolute rounded-full bg-white"
+                  initial={{ opacity: p.opacity, scale: 1 }}
+                  animate={{
+                    opacity: 0,
+                    scale: 0,
+                    x: (Math.random() - 0.5) * 30,
+                    y: -20 - Math.random() * 20,
+                  }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                  style={{
+                    width: p.size,
+                    height: p.size,
+                    left: `${p.x}%`,
+                    top: `${p.y}%`,
+                    rotate: p.angle,
+                  }}
+                />
+              ))}
+            </div>
+
+            <m.div
+              className="p-8 md:p-12 min-h-[380px] flex flex-col"
+              animate={isWiping
+                ? { opacity: 0, filter: "blur(8px)", scale: 0.97 }
+                : { opacity: 1, filter: "blur(0px)", scale: 1 }
+              }
+              transition={{ duration: 0.5, ease: "easeInOut" }}
             >
               {/* Başlık */}
               <div
@@ -227,7 +285,7 @@ export default function BerkanBoard() {
                   berkan matematik
                 </span>
               </div>
-            </div>
+            </m.div>
           </div>
         </div>
       </div>

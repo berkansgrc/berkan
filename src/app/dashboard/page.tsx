@@ -1,7 +1,8 @@
-import { BookOpen, Trophy, Clock, Target, ArrowRight, Play, CheckCircle2 } from "lucide-react";
+import { BookOpen, Trophy, Target, ArrowRight, CheckCircle2, XCircle, MinusCircle, History } from "lucide-react";
 import { getCachedUser, getCachedProfile } from "@/utils/supabase/queries";
 import { createClient } from "@/utils/supabase/server";
 import DashboardLessons from "@/components/dashboard/DashboardLessons";
+import Link from "next/link";
 
 export const metadata = {
   title: "Panelim | Berkan Matematik",
@@ -70,8 +71,10 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: studentResults } = await supabase
     .from("exam_results")
-    .select("score, correct, wrong")
-    .eq("user_id", user.id);
+    .select("id, score, correct, wrong, blank, submitted_at, exams(title)")
+    .eq("user_id", user.id)
+    .not("submitted_at", "is", null)
+    .order("submitted_at", { ascending: false });
 
   const examCount = studentResults?.length || 0;
   const studentAvgScore =
@@ -81,7 +84,8 @@ export default async function DashboardPage() {
         ) / 10
       : 0;
 
-  const lastResult = studentResults && studentResults.length > 0 ? studentResults[studentResults.length - 1] : null;
+  const recentResults = studentResults?.slice(0, 5) ?? [];
+  const lastResult = recentResults.length > 0 ? recentResults[0] : null;
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] w-full p-4 md:p-8 bg-background overflow-hidden pb-20">
@@ -154,6 +158,46 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Son Sınav Sonuçları */}
+        {recentResults.length > 0 && (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <History className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-heading font-extrabold text-foreground">Son Sınav Sonuçları</h2>
+              </div>
+              <Link href="/dashboard/exam-history" className="flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary/80 transition-colors">
+                Tümünü Gör <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {recentResults.map((r) => {
+                const exam = r.exams as unknown as { title: string } | null;
+                const score = Number(r.score ?? 0);
+                const scoreColor = score >= 70 ? "text-emerald-600" : score >= 40 ? "text-amber-600" : "text-red-600";
+                const scoreBg = score >= 70 ? "bg-emerald-500/10 border-emerald-500/20" : score >= 40 ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
+                const date = new Date(r.submitted_at).toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+                return (
+                  <Link key={r.id} href={`/exams/result/${r.id}`}>
+                    <div className="rounded-[1.25rem] border border-border/50 bg-card/60 backdrop-blur-md px-5 py-4 flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-heading font-bold text-foreground group-hover:text-primary transition-colors truncate text-sm">{exam?.title ?? "Sınav"}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{date}</p>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0 text-sm font-bold">
+                        <span className="flex items-center gap-1 text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" />{r.correct ?? 0}</span>
+                        <span className="flex items-center gap-1 text-red-500"><XCircle className="w-3.5 h-3.5" />{r.wrong ?? 0}</span>
+                        <span className="flex items-center gap-1 text-slate-400"><MinusCircle className="w-3.5 h-3.5" />{r.blank ?? 0}</span>
+                        <span className={`px-2.5 py-1 rounded-lg border font-heading font-black text-sm ${scoreBg} ${scoreColor}`}>{score.toFixed(1)}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Yaklaşan Özel Derslerim */}
         <DashboardLessons userId={user.id} />

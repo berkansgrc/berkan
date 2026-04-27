@@ -6,6 +6,7 @@ import LivePollWidget from "@/components/live/LivePollWidget";
 import LiveQuestionQueue from "@/components/live/LiveQuestionQueue";
 import LessonReminderBanner from "@/components/live/LessonReminderBanner";
 import LivePresenceTracker from "@/components/live/LivePresenceTracker";
+import ReminderOptIn from "@/components/live/ReminderOptIn";
 
 export const metadata = {
   title: "Canlı Dersim | Berkan Matematik",
@@ -66,7 +67,11 @@ export default async function DashboardCanliDersPage() {
                   {isLive ? <><Wifi className="w-3 h-3" /> CANLI</> : <><WifiOff className="w-3 h-3" /> ÇEVRIMDIŞI</>}
                 </div>
                 {isLive && (
-                  <LivePresenceTracker userId={user.id} userName={firstName} />
+                  <LivePresenceTracker
+                    userId={user.id}
+                    userName={firstName}
+                    lessonId={lessonTitle}
+                  />
                 )}
               </div>
               <h1 className="text-3xl font-heading font-extrabold tracking-tight text-foreground">Canlı Dersim</h1>
@@ -177,6 +182,9 @@ export default async function DashboardCanliDersPage() {
                 />
               </div>
             )}
+
+            {/* Hatırlatıcı tercihi */}
+            {!isLive && <ReminderOptIn />}
 
             {/* Quick Actions */}
             <div className="rounded-[1.5rem] border border-border/50 bg-card/60 p-5 space-y-3">

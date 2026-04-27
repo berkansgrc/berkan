@@ -13,11 +13,13 @@ import {
   CloseCircle,
   TickCircle,
   Archive,
+  Notification,
 } from "iconsax-react";
 import { Loader2 } from "lucide-react";
 import AdminPresencePanel from "@/components/admin/AdminPresencePanel";
 import PollResultsPanel from "@/components/admin/PollResultsPanel";
 import ArchiveLessonButton from "@/components/admin/ArchiveLessonButton";
+import AttendanceHistoryPanel from "@/components/admin/AttendanceHistoryPanel";
 
 interface LiveStreamConfig {
   id?: string;
@@ -75,6 +77,29 @@ export default function LiveDashboardClient({
   const youtubeId = initialConfig?.youtube_video_id ?? null;
   const lessonTitle = initialConfig?.lesson_title ?? "Canlı Ders";
   const lessonDescription = initialConfig?.lesson_description ?? "";
+  const scheduledAt = initialConfig?.scheduled_at;
+
+  const [sendingReminder, setSendingReminder] = useState(false);
+  const [reminderSent, setReminderSent] = useState(false);
+
+  const sendReminder = async () => {
+    setSendingReminder(true);
+    try {
+      const res = await fetch("/api/admin/send-reminder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lessonTitle, scheduledAt })
+      });
+      if (res.ok) {
+        setReminderSent(true);
+        setTimeout(() => setReminderSent(false), 3000);
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setSendingReminder(false);
+    }
+  };
 
   // Toggle live status
   const toggleLive = useCallback(async () => {
@@ -173,25 +198,45 @@ export default function LiveDashboardClient({
           </div>
         </div>
 
-        {/* Live toggle */}
-        <button
-          onClick={toggleLive}
-          disabled={toggling}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading font-bold text-xs transition-all hover:-translate-y-0.5 ${
-            isLive
-              ? "bg-red-500 text-white shadow-[0_4px_12px_rgba(239,68,68,0.3)]"
-              : "bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)]"
-          }`}
-        >
-          {toggling ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : isLive ? (
-            <CloseCircle className="w-4 h-4" variant="Bold" />
-          ) : (
-            <Wifi className="w-4 h-4" variant="Bold" />
+        <div className="flex items-center gap-3">
+          {/* Send Reminder */}
+          {!isLive && (
+            <button
+              onClick={sendReminder}
+              disabled={sendingReminder || reminderSent}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading font-bold text-xs transition-all hover:-translate-y-0.5 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+            >
+              {sendingReminder ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : reminderSent ? (
+                <TickCircle className="w-4 h-4" variant="Bold" />
+              ) : (
+                <Notification className="w-4 h-4" variant="Bold" />
+              )}
+              {reminderSent ? "Gönderildi" : "Hatırlatıcı Gönder"}
+            </button>
           )}
-          {isLive ? "Yayını Kapat" : "Yayını Aç"}
-        </button>
+
+          {/* Live toggle */}
+          <button
+            onClick={toggleLive}
+            disabled={toggling}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading font-bold text-xs transition-all hover:-translate-y-0.5 ${
+              isLive
+                ? "bg-red-500 text-white shadow-[0_4px_12px_rgba(239,68,68,0.3)]"
+                : "bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)]"
+            }`}
+          >
+            {toggling ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : isLive ? (
+              <CloseCircle className="w-4 h-4" variant="Bold" />
+            ) : (
+              <Wifi className="w-4 h-4" variant="Bold" />
+            )}
+            {isLive ? "Yayını Kapat" : "Yayını Aç"}
+          </button>
+        </div>
       </div>
 
       {/* Main Grid */}
@@ -303,6 +348,7 @@ export default function LiveDashboardClient({
                 title={lessonTitle}
                 description={lessonDescription}
                 youtubeVideoId={youtubeId}
+                lessonId={lessonTitle}
               />
             </m.div>
           )}
@@ -317,6 +363,15 @@ export default function LiveDashboardClient({
             transition={{ delay: 0.15 }}
           >
             <AdminPresencePanel />
+          </m.div>
+
+          {/* Attendance History */}
+          <m.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <AttendanceHistoryPanel />
           </m.div>
 
           {/* Question Moderation */}

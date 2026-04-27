@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { FeedbackButton } from "@/components/ui/FeedbackButton";
 import { LazyMotionProvider } from "@/components/providers/LazyMotionProvider";
 import QueryProvider from "@/components/providers/QueryProvider";
+import PageTransition from "@/components/ui/PageTransition";
 import "@/env"; // Çevre değişkenlerini başlangıçta doğrula
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -81,7 +82,9 @@ export default function RootLayout({
         <QueryProvider>
           <LazyMotionProvider>
             <Navbar />
-            <main className="flex-1 flex flex-col pb-16 md:pb-0">{children}</main>
+            <main className="flex-1 flex flex-col pb-16 md:pb-0">
+              <PageTransition>{children}</PageTransition>
+            </main>
             <Footer />
             <FeedbackButton />
           </LazyMotionProvider>

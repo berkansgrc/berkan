@@ -6,6 +6,7 @@ import LottieBackground from "@/components/ui/LottieBackground";
 import TextReveal from "@/components/ui/TextReveal";
 import MagneticButton from "@/components/ui/MagneticButton";
 import BerkanBoard from "@/components/ui/BerkanBoard";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 import LiveMathPulse from "@/components/ui/LiveMathPulse";
 import BeautifulMistakes from "@/components/ui/BeautifulMistakes";
@@ -37,10 +38,13 @@ export default function Home() {
         {/* Hero Section */}
         <section className="flex flex-col items-center justify-center min-h-[80vh] mb-32 relative overflow-hidden">
           <div className="w-full max-w-4xl mx-auto space-y-10 text-center relative z-10 px-4">
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container rounded-full text-xs font-black tracking-widest uppercase animate-float">
-              <Activity size={16} variant="TwoTone" />
-              Matematiğin Kalbi Burada Atıyor
-            </div>
+            {/* Badge - stagger item 1 */}
+            <ScrollReveal delay={0.1} direction="up">
+              <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container rounded-full text-xs font-black tracking-widest uppercase animate-float">
+                <Activity size={16} variant="TwoTone" />
+                Matematiğin Kalbi Burada Atıyor
+              </div>
+            </ScrollReveal>
             
             <TextReveal 
               text="Sayıların Ötesinde, Düşüncenin Mimarisini Keşfet." 
@@ -48,37 +52,48 @@ export default function Home() {
               className="text-4xl md:text-6xl lg:text-7xl font-heading font-extrabold tracking-tighter text-zinc-400 leading-[1.15] max-w-6xl mx-auto pb-4"
             />
             
-            <p className="text-xl text-zinc-400/80 max-w-2xl mx-auto leading-loose font-medium">
-                Sadece işlem yapmayı değil, sayıların arkasındaki hikayeyi keşfet. "Hata Güzeldir" diyerek çıktığımız bu yolda, her yanlışını bir başarı basamağına dönüştürüyoruz.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-6">
-                <Link href="/register">
-                    <MagneticButton className="px-8 py-4 bg-zinc-600 text-white rounded-full font-bold text-lg hover:bg-zinc-500 transition-all shadow-xl">
-                        Yolculuğa Katıl
-                    </MagneticButton>
-                </Link>
-                <Link href="#journey">
-                    <MagneticButton className="px-8 py-4 bg-white/50 backdrop-blur-md border border-white/20 text-zinc-500 rounded-full font-bold text-lg hover:bg-white/80 transition-all">
-                        Nasıl Çalışır?
-                    </MagneticButton>
-                </Link>
-            </div>
+            <ScrollReveal delay={0.5} direction="up">
+              <p className="text-xl text-zinc-400/80 max-w-2xl mx-auto leading-loose font-medium">
+                  Sadece işlem yapmayı değil, sayıların arkasındaki hikayeyi keşfet. "Hata Güzeldir" diyerek çıktığımız bu yolda, her yanlışını bir başarı basamağına dönüştürüyoruz.
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.65} direction="up">
+              <div className="flex flex-wrap items-center justify-center gap-4 pt-6">
+                  <Link href="/register">
+                      <MagneticButton className="px-8 py-4 bg-zinc-600 text-white rounded-full font-bold text-lg hover:bg-zinc-500 transition-all shadow-xl">
+                          Yolculuğa Katıl
+                      </MagneticButton>
+                  </Link>
+                  <Link href="#journey">
+                      <MagneticButton className="px-8 py-4 bg-white/50 backdrop-blur-md border border-white/20 text-zinc-500 rounded-full font-bold text-lg hover:bg-white/80 transition-all">
+                          Nasıl Çalışır?
+                      </MagneticButton>
+                  </Link>
+              </div>
+            </ScrollReveal>
           </div>
         </section>
 
         {/* 1. Berkan'ın Tahtası */}
-        <BerkanBoard />
-
+        <ScrollReveal direction="up" delay={0.1}>
+          <BerkanBoard />
+        </ScrollReveal>
 
         {/* 3. Canlı Sayaç */}
-        <LiveMathPulse />
+        <ScrollReveal direction="up" delay={0.1}>
+          <LiveMathPulse />
+        </ScrollReveal>
 
         {/* 4. Hata Güzeldir */}
-        <BeautifulMistakes />
+        <ScrollReveal direction="up" delay={0.1}>
+          <BeautifulMistakes />
+        </ScrollReveal>
 
         {/* 5. Nasıl Çalışır / Öğrenme Yolculuğu */}
-        <LearningJourney />
-
+        <ScrollReveal direction="up" delay={0.1}>
+          <LearningJourney />
+        </ScrollReveal>
 
         
       </main>
@@ -86,3 +101,4 @@ export default function Home() {
     </div>
   );
 }
+

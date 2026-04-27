@@ -56,6 +56,15 @@ export default function MagneticButton({
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
+      {/* Glow aura — visible on hover via group */}
+      <span
+        className="absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-300 pointer-events-none group-hover:opacity-100"
+        style={{
+          background: "radial-gradient(ellipse at center, rgba(255,255,255,0.12) 0%, transparent 70%)",
+          filter: "blur(8px)",
+        }}
+        aria-hidden="true"
+      />
       {children}
     </m.div>
   );
