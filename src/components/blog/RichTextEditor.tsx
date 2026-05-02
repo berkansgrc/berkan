@@ -185,7 +185,6 @@ export default function RichTextEditor({ content, onChange, placeholder = "Yazma
         class: 'prose prose-invert prose-p:text-foreground/80 prose-headings:text-foreground prose-a:text-primary max-w-none focus:outline-none min-h-[300px] p-6 text-lg leading-relaxed',
       },
     },
-    immediatelyRender: false,
   });
 
   return (
