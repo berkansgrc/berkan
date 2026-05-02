@@ -36,7 +36,7 @@ export default function GuestAccessForm({ examId, expectedCode }: { examId: stri
           </div>
           <div>
              <h3 className="font-heading font-bold text-foreground">Öğretmen Anahtarı</h3>
-             <p className="text-xs font-medium text-muted-foreground">Bu sınava girmek için 9 haneli koda ihtiyacınız var.</p>
+             <p className="text-xs font-medium text-muted-foreground">Bu sınava girmek için öğretmeninizden aldığınız giriş koduna ihtiyacınız var.</p>
           </div>
         </div>
 
@@ -51,9 +51,9 @@ export default function GuestAccessForm({ examId, expectedCode }: { examId: stri
           <Input 
             value={code} 
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="Örn: 9A8B7C6D5" 
+            placeholder="Örn: A1B2C3D4" 
             className="h-12 bg-background/50 text-center font-mono font-bold tracking-widest text-lg uppercase"
-            maxLength={9}
+            maxLength={10}
           />
         </div>
 

@@ -11,24 +11,21 @@ interface PageTransitionProps {
 const pageVariants = {
   initial: {
     opacity: 0,
-    y: 16,
-    filter: "blur(4px)",
+    y: 12,
   },
   animate: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: {
-      duration: 0.5,
-      ease: [0.22, 1, 0.36, 1] as const, // ease-out-expo
+      duration: 0.3,
+      ease: [0.22, 1, 0.36, 1] as const,
     },
   },
   exit: {
     opacity: 0,
-    y: -8,
-    filter: "blur(2px)",
+    y: -6,
     transition: {
-      duration: 0.25,
+      duration: 0.15,
       ease: "easeIn" as const,
     },
   },
@@ -45,7 +42,8 @@ export default function PageTransition({ children }: PageTransitionProps) {
         initial="initial"
         animate="animate"
         exit="exit"
-        style={{ width: "100%", flex: 1, display: "flex", flexDirection: "column" }}
+        className="w-full flex flex-1 flex-col"
+        suppressHydrationWarning
       >
         {children}
       </m.div>

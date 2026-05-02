@@ -5,6 +5,8 @@ import { Award, RotateCcw, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ResultAnalysisClient from "@/components/exam/ResultAnalysisClient";
 import DonutChart from "@/components/ui/DonutChart";
+import AnimatedScore from "@/components/exam/AnimatedScore";
+import ShareResultButton from "@/components/exam/ShareResultButton";
 
 type Props = {
   params: Promise<{ resultId: string }>;
@@ -56,6 +58,7 @@ export default async function ResultPage({ params }: Props) {
     correctOption: q.correct_option,
     isCorrect: answers[q.id] === q.correct_option,
     achievement: q.achievement ?? null,
+    difficulty: (q as any).difficulty ?? null,
   }));
 
   const donutSegments = [
@@ -122,7 +125,7 @@ export default async function ResultPage({ params }: Props) {
                 <p className="text-xs font-bold text-slate-600/70 uppercase tracking-wider mt-1">Boş</p>
               </div>
               <div className={`rounded-[1.25rem] bg-gradient-to-br ${scoreBg} border p-5 text-center`}>
-                <p className={`text-3xl font-heading font-black ${scoreColor}`}>{score.toFixed(2)}</p>
+                <AnimatedScore score={score} className={`text-3xl font-heading font-black ${scoreColor}`} />
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">Net Puan</p>
               </div>
             </div>
@@ -157,12 +160,7 @@ export default async function ResultPage({ params }: Props) {
               Tüm Sınavlara Dön
             </Button>
           </Link>
-          <Link href="/dashboard/exam-history">
-            <Button className="w-full sm:w-auto gap-2 rounded-xl h-12 font-heading font-bold bg-gradient-to-br from-primary to-[#005a55] border-0">
-              <Share2 className="w-4 h-4" />
-              Sınav Geçmişim
-            </Button>
-          </Link>
+          <ShareResultButton />
         </div>
       </div>
     </div>

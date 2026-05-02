@@ -27,10 +27,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Başlık ve en az bir soru gereklidir." }, { status: 400 });
   }
 
-  // 9 karakterlik okunabilir bir kod oluştur
+  // 8 karakterlik okunabilir bir kod oluştur
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let shareCode = "";
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 8; i++) {
     shareCode += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   

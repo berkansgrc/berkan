@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   images: {
-    unoptimized: true,
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
@@ -17,6 +16,9 @@ const nextConfig: NextConfig = {
     // Lucide-react ve diğer büyük paketlerin sadece kullanılan ikonları yüklemesi
     optimizePackageImports: [
         "lucide-react",
+        "iconsax-react",
+        "katex",
+        "react-markdown",
         "@supabase/supabase-js",
         "@supabase/ssr",
         "@base-ui/react",

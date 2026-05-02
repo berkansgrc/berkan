@@ -3,6 +3,7 @@ import { getCachedUser, getCachedProfile } from "@/utils/supabase/queries";
 import { createClient } from "@/utils/supabase/server";
 import DashboardLessons from "@/components/dashboard/DashboardLessons";
 import Link from "next/link";
+import Sparkline from "@/components/ui/Sparkline";
 
 export const metadata = {
   title: "Panelim | Berkan Matematik",
@@ -87,6 +88,8 @@ export default async function DashboardPage() {
   const recentResults = studentResults?.slice(0, 5) ?? [];
   const lastResult = recentResults.length > 0 ? recentResults[0] : null;
 
+  const recentScores = [...recentResults].reverse().map((r) => Number(r.score) || 0);
+
   return (
     <div className="relative min-h-[calc(100vh-4rem)] w-full p-4 md:p-8 bg-background overflow-hidden pb-20">
       {/* Dekoratif arka plan */}
@@ -132,7 +135,14 @@ export default async function DashboardPage() {
               </div>
               <p className="text-sm font-semibold text-muted-foreground mb-1">Genel Puan Ortalaması</p>
               <div className="text-3xl font-heading font-bold text-foreground">{studentAvgScore}</div>
-              <p className="text-xs font-semibold text-muted-foreground mt-2">Tüm sınavlarınız baz alındı</p>
+              {recentScores.length > 1 ? (
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">Son 5 Sınav Trendi</p>
+                  <Sparkline data={recentScores} width={200} height={30} stroke="hsl(var(--secondary))" strokeWidth={2.5} />
+                </div>
+              ) : (
+                <p className="text-xs font-semibold text-muted-foreground mt-2">Tüm sınavlarınız baz alındı</p>
+              )}
             </div>
           </div>
 

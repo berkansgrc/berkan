@@ -62,6 +62,7 @@ export default async function ExamEditPage({
     correctOption: q.correct_option,
     imageUrl: q.image_url || "",
     achievement: (q as Record<string, unknown>).achievement as string || "",
+    difficulty: (((q as Record<string, unknown>).difficulty as string) || "medium") as "easy" | "medium" | "hard",
   }));
 
   const initialData: ExamDraft = {

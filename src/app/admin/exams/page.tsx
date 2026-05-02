@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCachedUser, getCachedProfile } from "@/utils/supabase/queries";
 import { createClient } from "@/utils/supabase/server";
 import { Add } from "iconsax-react";
 import ExamListClient from "@/components/admin/ExamListClient";
@@ -10,14 +11,11 @@ export const metadata = {
 export const revalidate = 30;
 
 export default async function AdminExamsPage() {
-  const supabase = await createClient();
+  // Cache'li auth — Admin layout ile aynı istek, sıfır ekstra DB çağrısı
+  const user = await getCachedUser();
+  const profile = await getCachedProfile(user!.id);
 
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user!.id)
-    .single();
+  const supabase = await createClient();
 
   // Sınavları sorularıyla birlikte çek (önizleme için)
   let query = supabase
@@ -29,24 +27,33 @@ export default async function AdminExamsPage() {
     query = query.eq("created_by", user!.id);
   }
 
-  const { data: exams } = await query;
+  // TÜM sonuçları ve TÜM sınavları TEK sorguda çek (N+1 → 1)
+  const [{ data: exams }, { data: allResults }] = await Promise.all([
+    query,
+    supabase
+      .from("exam_results")
+      .select("exam_id, score")
+      .not("submitted_at", "is", null),
+  ]);
 
-  // Her sınav için katılımcı sayısını çek
-  const examsWithCounts = await Promise.all(
-    (exams || []).map(async (exam) => {
-      const { count } = await supabase
-        .from("exam_results")
-        .select("*", { count: "exact", head: true })
-        .eq("exam_id", exam.id)
-        .not("submitted_at", "is", null);
+  // Client-side gruplama ile istatistik hesapla
+  const resultMap = new Map<string, { count: number; totalScore: number }>();
+  allResults?.forEach((r) => {
+    const entry = resultMap.get(r.exam_id) || { count: 0, totalScore: 0 };
+    entry.count++;
+    entry.totalScore += r.score || 0;
+    resultMap.set(r.exam_id, entry);
+  });
 
-      return {
-        ...exam,
-        questions: exam.questions || [],
-        _resultCount: count || 0,
-      };
-    })
-  );
+  const examsWithCounts = (exams || []).map((exam) => {
+    const stats = resultMap.get(exam.id);
+    return {
+      ...exam,
+      questions: exam.questions || [],
+      _resultCount: stats?.count || 0,
+      _avgScore: stats && stats.count > 0 ? Math.round(stats.totalScore / stats.count) : 0,
+    };
+  });
 
   return (
     <div className="p-6 lg:p-10 pb-24 lg:pb-10 relative z-10 w-full h-full">

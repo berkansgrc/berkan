@@ -1,70 +1,97 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
 
-export async function POST(_req: NextRequest, { params }: { params: Promise<{ examId: string }> }) {
-  const { examId } = await params;
-  const supabase = await createClient();
-  const adminClient = createAdminClient();
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ examId: string }> }
+) {
+  try {
+    const { examId } = await params;
+    const supabase = await createClient();
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (!profile || !["admin", "teacher"].includes(profile.role)) {
-    return NextResponse.json({ error: "Yetkisiz" }, { status: 403 });
-  }
-
-  // Orijinal sınavı çek
-  const { data: exam, error: examError } = await adminClient
-    .from("exams")
-    .select("*")
-    .eq("id", examId)
-    .single();
-
-  if (examError || !exam) return NextResponse.json({ error: "Sınav bulunamadı" }, { status: 404 });
-
-  // Orijinal soruları çek
-  const { data: questions } = await adminClient
-    .from("questions")
-    .select("*")
-    .eq("exam_id", examId)
-    .order("order_index");
-
-  // Yeni share code
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let shareCode = "";
-  for (let i = 0; i < 9; i++) shareCode += chars.charAt(Math.floor(Math.random() * chars.length));
-
-  // Yeni sınav oluştur
-  const { data: newExam, error: createError } = await adminClient
-    .from("exams")
-    .insert({
-      title: `Kopya — ${exam.title}`,
-      description: exam.description,
-      duration_minutes: exam.duration_minutes,
-      access_mode: exam.access_mode,
-      is_published: false,
-      created_by: user.id,
-      share_code: shareCode,
-    })
-    .select("id")
-    .single();
-
-  if (createError || !newExam) return NextResponse.json({ error: createError?.message }, { status: 500 });
-
-  // Soruları kopyala
-  if (questions && questions.length > 0) {
-    const newQuestions = questions.map(({ id: _id, exam_id: _eid, ...rest }) => ({
-      ...rest,
-      exam_id: newExam.id,
-    }));
-    const { error: qError } = await adminClient.from("questions").insert(newQuestions);
-    if (qError) {
-      await adminClient.from("exams").delete().eq("id", newExam.id);
-      return NextResponse.json({ error: qError.message }, { status: 500 });
+    if (profile?.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-  }
 
-  return NextResponse.json({ success: true, newExamId: newExam.id });
+    // Orijinal sınavı al
+    const { data: originalExam, error: examError } = await supabase
+      .from("exams")
+      .select("*")
+      .eq("id", examId)
+      .single();
+
+    if (examError || !originalExam) {
+      return NextResponse.json({ error: "Sınav bulunamadı." }, { status: 404 });
+    }
+
+    // Soruları al
+    const { data: originalQuestions, error: questionsError } = await supabase
+      .from("questions")
+      .select("*")
+      .eq("exam_id", examId);
+
+    if (questionsError) {
+      return NextResponse.json({ error: "Sorular alınamadı." }, { status: 500 });
+    }
+
+    // Yeni sınavı oluştur (is_published: false ve Kopya başlığı)
+    const newExamData = {
+      title: `Kopya — ${originalExam.title}`,
+      description: originalExam.description,
+      duration_minutes: originalExam.duration_minutes,
+      access_mode: originalExam.access_mode,
+      is_published: false,
+      share_code: null, // yeni sınavın kendine ait share_code'u olabilir veya null olabilir
+    };
+
+    const { data: newExam, error: insertExamError } = await supabase
+      .from("exams")
+      .insert(newExamData)
+      .select("id")
+      .single();
+
+    if (insertExamError || !newExam) {
+      return NextResponse.json({ error: "Yeni sınav oluşturulamadı." }, { status: 500 });
+    }
+
+    // Yeni soruları oluştur
+    if (originalQuestions && originalQuestions.length > 0) {
+      const newQuestionsData = originalQuestions.map(q => ({
+        exam_id: newExam.id,
+        body: q.body,
+        option_count: q.option_count,
+        options: q.options,
+        correct_option: q.correct_option,
+        order_index: q.order_index,
+        image_url: q.image_url,
+        achievement: q.achievement,
+        ...(q.difficulty ? { difficulty: q.difficulty } : {}),
+      }));
+
+      const { error: insertQuestionsError } = await supabase
+        .from("questions")
+        .insert(newQuestionsData);
+
+      if (insertQuestionsError) {
+        // Geri alma işlemi yapılabilir (Opsiyonel)
+        await supabase.from("exams").delete().eq("id", newExam.id);
+        return NextResponse.json({ error: "Sorular kopyalanamadı." }, { status: 500 });
+      }
+    }
+
+    return NextResponse.json({ success: true, newExamId: newExam.id });
+
+  } catch (error) {
+    console.error("Duplicate exam error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 }

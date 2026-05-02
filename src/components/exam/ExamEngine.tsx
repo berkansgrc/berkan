@@ -8,6 +8,7 @@ import QuestionCard from "@/components/exam/QuestionCard";
 import SubmitConfirmModal from "@/components/exam/SubmitConfirmModal";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Flag, HelpCircle } from "lucide-react";
+import { m, AnimatePresence } from "framer-motion";
 
 type Option = { label: string; text: string };
 type Question = {
@@ -40,7 +41,7 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
     return {};
   });
   const answersRef = useRef(answers);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [direction, setDirection] = useState(0);
   const prevCountRef = useRef(0);
   const [shimmerKey, setShimmerKey] = useState(0);
   const [flagged, setFlagged] = useState<Set<string>>(() => {
@@ -51,6 +52,7 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
     return new Set();
   });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showOnlyFlagged, setShowOnlyFlagged] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
   const [timeLogs, setTimeLogs] = useState<Record<string, number>>(() => {
@@ -116,27 +118,10 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
     return () => clearInterval(timer);
   }, [current, questions]);
 
-  // Question card slide animation
-  const animateQuestionTransition = useCallback((direction: "next" | "prev") => {
-    if (!cardRef.current) return;
-    const el = cardRef.current;
-    const xFrom = direction === "next" ? 60 : -60;
-    el.style.opacity = "0";
-    el.style.transform = `translateX(${xFrom}px) scale(0.97)`;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        el.style.transition = "opacity 0.38s ease, transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1)";
-        el.style.opacity = "1";
-        el.style.transform = "translateX(0) scale(1)";
-      });
-    });
-  }, []);
-
   const goTo = useCallback((idx: number) => {
-    const dir = idx > current ? "next" : "prev";
+    setDirection(idx > current ? 1 : -1);
     setCurrent(idx);
-    animateQuestionTransition(dir);
-  }, [current, animateQuestionTransition]);
+  }, [current]);
 
   // Milestone shimmer
   const answeredCount = questions.filter((q) => answers[q.id]).length;
@@ -236,6 +221,30 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
   const question = questions[current];
   const flaggedCount = flagged.size;
 
+  const variants = {
+    enter: (direction: number) => {
+      return {
+        x: direction > 0 ? 60 : -60,
+        opacity: 0,
+        scale: 0.98,
+      };
+    },
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+      scale: 1,
+    },
+    exit: (direction: number) => {
+      return {
+        zIndex: 0,
+        x: direction < 0 ? 60 : -60,
+        opacity: 0,
+        scale: 0.98,
+      };
+    }
+  };
+
   return (
     <div
       className="min-h-screen bg-background relative overflow-x-hidden font-sans"
@@ -294,121 +303,165 @@ export default function ExamEngine({ exam, questions, resultId, storageKey }: Pr
         </div>
       </div>
 
-      <div className="container max-w-4xl mx-auto px-4 py-8 relative z-10">
-        {/* Flag button for current question */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => question && toggleFlag(question.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-heading font-bold border transition-all ${
-              question && flagged.has(question.id)
-                ? "bg-blue-500/15 border-blue-500/40 text-blue-600 hover:bg-blue-500/25"
-                : "bg-input/40 border-border/50 text-muted-foreground hover:text-foreground hover:bg-input"
-            }`}
-            title="Soruyu işaretle (F)"
-          >
-            <Flag className={`w-4 h-4 ${question && flagged.has(question.id) ? "fill-blue-500" : ""}`} />
-            {question && flagged.has(question.id) ? "İşaretlendi" : "İşaretle"}
-          </button>
-        </div>
+      <div className="container max-w-6xl mx-auto px-4 py-8 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
+          
+          {/* Sınav Özet Sidebar'ı (Masaüstünde solda, mobilde altta) */}
+          <div className="w-full lg:w-[320px] shrink-0 space-y-6 lg:sticky lg:top-28 order-last lg:order-first mt-8 lg:mt-0">
+            <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-md p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-heading font-bold text-foreground">Soru Haritası</h3>
+                
+                {/* İşaretli Soruları Filtreleme */}
+                <button
+                  onClick={() => setShowOnlyFlagged(!showOnlyFlagged)}
+                  className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                    showOnlyFlagged ? "bg-blue-500 text-white" : "bg-input/50 text-muted-foreground hover:bg-input hover:text-foreground"
+                  }`}
+                  title="Sadece işaretli soruları göster"
+                >
+                  <Flag className="w-4 h-4" />
+                </button>
+              </div>
 
-        {/* Question Card */}
-        <div ref={cardRef} style={{ willChange: "transform, opacity" }}>
-          {question && (
-            <QuestionCard
-              orderIndex={question.order_index}
-              body={question.body}
-              options={question.options}
-              imageUrl={question.image_url}
-              selectedOption={answers[question.id] ?? null}
-              onSelect={(label) => handleSelect(question.id, label)}
-            />
-          )}
-        </div>
+              <div className="flex items-center gap-4 text-xs font-bold mb-5 bg-background/50 rounded-xl p-3">
+                <div className="flex flex-col gap-2">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm bg-emerald-500/80 border border-emerald-600/30" />
+                    Cevaplandı ({answeredCount})
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm bg-amber-400/80 border border-amber-500/30" />
+                    Boş ({questions.length - answeredCount})
+                  </span>
+                  {flaggedCount > 0 && (
+                    <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                      <span className="w-3 h-3 rounded-sm bg-blue-500/80 border border-blue-600/30" />
+                      İşaretli ({flaggedCount})
+                    </span>
+                  )}
+                </div>
+              </div>
 
-        {/* Navigation */}
-        <div className="mt-10 space-y-5">
-          <div className="flex items-center justify-between">
-            <p className="font-heading font-bold text-sm text-muted-foreground">
-              Soru <span className="text-foreground">{current + 1}</span> / {questions.length}
-            </p>
-            <div className="flex items-center gap-4 text-xs font-bold">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-emerald-500/80 border border-emerald-600/30" />
-                Cevaplandı ({answeredCount})
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-amber-400/80 border border-amber-500/30" />
-                Boş ({questions.length - answeredCount})
-              </span>
-              {flaggedCount > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-blue-400/80 border border-blue-500/30" />
-                  İşaretli ({flaggedCount})
-                </span>
-              )}
+              {/* Question grid */}
+              <div className="flex flex-wrap gap-2">
+                {questions.map((q, i) => {
+                  const isCurrent = i === current;
+                  const isAnswered = !!answers[q.id];
+                  const isFlagged = flagged.has(q.id);
+                  
+                  if (showOnlyFlagged && !isFlagged && !isCurrent) return null;
+
+                  let colorClasses = "";
+                  if (isCurrent) {
+                    if (isFlagged) colorClasses = "bg-blue-500 text-white border-blue-600 shadow-md ring-2 ring-blue-400/40 scale-110";
+                    else if (isAnswered) colorClasses = "bg-emerald-500 text-white border-emerald-600 shadow-md ring-2 ring-emerald-400/40 scale-110";
+                    else colorClasses = "bg-amber-400 text-amber-900 border-amber-500 shadow-md ring-2 ring-amber-300/40 scale-110";
+                  } else if (isFlagged) {
+                    colorClasses = "bg-blue-500/15 text-blue-700 border-blue-500/30 hover:bg-blue-500/25";
+                  } else if (isAnswered) {
+                    colorClasses = "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 hover:bg-emerald-500/25";
+                  } else {
+                    colorClasses = "bg-amber-400/15 text-amber-700 border-amber-400/30 hover:bg-amber-400/25";
+                  }
+                  return (
+                    <button
+                      key={q.id}
+                      onClick={() => goTo(i)}
+                      className={`h-10 w-10 flex-shrink-0 rounded-xl text-sm font-heading font-bold border-2 transition-all duration-200 flex items-center justify-center relative ${colorClasses}`}
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                })}
+                {showOnlyFlagged && flaggedCount === 0 && !flagged.has(questions[current]?.id) && (
+                  <p className="text-sm text-muted-foreground w-full text-center py-4">İşaretli soru bulunmuyor.</p>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Question grid */}
-          <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-md p-4 shadow-sm">
-            <div className="flex flex-wrap gap-2 justify-center">
-              {questions.map((q, i) => {
-                const isCurrent = i === current;
-                const isAnswered = !!answers[q.id];
-                const isFlagged = flagged.has(q.id);
-                let colorClasses = "";
-                if (isCurrent) {
-                  if (isFlagged) colorClasses = "bg-blue-500 text-white border-blue-600 shadow-md ring-2 ring-blue-400/40 scale-110";
-                  else if (isAnswered) colorClasses = "bg-emerald-500 text-white border-emerald-600 shadow-md ring-2 ring-emerald-400/40 scale-110";
-                  else colorClasses = "bg-amber-400 text-amber-900 border-amber-500 shadow-md ring-2 ring-amber-300/40 scale-110";
-                } else if (isFlagged) {
-                  colorClasses = "bg-blue-500/15 text-blue-700 border-blue-500/30 hover:bg-blue-500/25";
-                } else if (isAnswered) {
-                  colorClasses = "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 hover:bg-emerald-500/25";
-                } else {
-                  colorClasses = "bg-amber-400/15 text-amber-700 border-amber-400/30 hover:bg-amber-400/25";
-                }
-                return (
-                  <button
-                    key={q.id}
-                    onClick={() => goTo(i)}
-                    className={`h-10 w-10 flex-shrink-0 rounded-xl text-sm font-heading font-bold border-2 transition-all duration-200 flex items-center justify-center relative ${colorClasses}`}
+          {/* Ana Soru Alanı */}
+          <div className="flex-1 w-full max-w-3xl">
+            {/* Flag button for current question */}
+            <div className="flex justify-between items-center mb-4">
+              <p className="font-heading font-bold text-sm text-muted-foreground">
+                Soru <span className="text-foreground">{current + 1}</span> / {questions.length}
+              </p>
+              <button
+                onClick={() => question && toggleFlag(question.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-heading font-bold border transition-all ${
+                  question && flagged.has(question.id)
+                    ? "bg-blue-500/15 border-blue-500/40 text-blue-600 hover:bg-blue-500/25"
+                    : "bg-input/40 border-border/50 text-muted-foreground hover:text-foreground hover:bg-input"
+                }`}
+                title="Soruyu işaretle (F)"
+              >
+                <Flag className={`w-4 h-4 ${question && flagged.has(question.id) ? "fill-blue-500" : ""}`} />
+                {question && flagged.has(question.id) ? "İşaretlendi" : "İşaretle"}
+              </button>
+            </div>
+
+            {/* Question Card */}
+            <div className="relative overflow-hidden w-full">
+              <AnimatePresence mode="wait" custom={direction}>
+                {question && (
+                  <m.div
+                    key={current}
+                    custom={direction}
+                    variants={variants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{
+                      x: { type: "spring", stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.2 }
+                    }}
                   >
-                    {i + 1}
-                  </button>
-                );
-              })}
+                    <QuestionCard
+                      orderIndex={question.order_index}
+                      body={question.body}
+                      options={question.options}
+                      imageUrl={question.image_url}
+                      selectedOption={answers[question.id] ?? null}
+                      onSelect={(label) => handleSelect(question.id, label)}
+                    />
+                  </m.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Navigation */}
+            <div className="mt-8">
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  onClick={() => goTo(Math.max(0, current - 1))}
+                  disabled={current === 0}
+                  className="flex-1 h-12 rounded-xl font-heading font-bold bg-card/60 backdrop-blur-md border border-border/60 hover:bg-input hover:text-foreground transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-5 w-5" /> Önceki
+                </button>
+                <button
+                  onClick={() => goTo(Math.min(questions.length - 1, current + 1))}
+                  disabled={current === questions.length - 1}
+                  className="flex-1 h-12 rounded-xl font-heading font-bold bg-card/60 backdrop-blur-md border border-border/60 text-foreground hover:bg-input transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Sonraki <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Hint */}
+            <div className="mt-12 mb-8 lg:mb-20 rounded-[1.5rem] border border-border/50 bg-input/20 px-6 py-4 flex items-start sm:items-center gap-4 text-sm text-muted-foreground font-medium">
+              <div className="bg-background rounded-full p-2 shrink-0 shadow-sm border border-border/50">
+                <HelpCircle className="h-5 w-5 text-primary" />
+              </div>
+              <p>
+                Ok tuşları ile sorular arasında geçiş yap. <kbd className="px-1.5 py-0.5 rounded bg-input border border-border text-xs font-mono">F</kbd> ile soruyu işaretle.
+                Sola/sağa kaydırarak da dolaşabilirsin.
+              </p>
             </div>
           </div>
-
-          {/* Prev / Next */}
-          <div className="flex items-center justify-between gap-4">
-            <button
-              onClick={() => goTo(Math.max(0, current - 1))}
-              disabled={current === 0}
-              className="flex-1 h-12 rounded-xl font-heading font-bold bg-card/60 backdrop-blur-md border border-border/60 hover:bg-input hover:text-foreground transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="h-5 w-5" /> Önceki
-            </button>
-            <button
-              onClick={() => goTo(Math.min(questions.length - 1, current + 1))}
-              disabled={current === questions.length - 1}
-              className="flex-1 h-12 rounded-xl font-heading font-bold bg-card/60 backdrop-blur-md border border-border/60 text-foreground hover:bg-input transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Sonraki <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Hint */}
-        <div className="mt-12 mb-20 rounded-[1.5rem] border border-border/50 bg-input/20 px-6 py-4 flex items-start sm:items-center gap-4 text-sm text-muted-foreground font-medium">
-          <div className="bg-background rounded-full p-2 shrink-0 shadow-sm border border-border/50">
-            <HelpCircle className="h-5 w-5 text-primary" />
-          </div>
-          <p>
-            Ok tuşları ile sorular arasında geçiş yap. <kbd className="px-1.5 py-0.5 rounded bg-input border border-border text-xs font-mono">F</kbd> ile soruyu işaretle.
-            Tüm cevapların arka planda otomatik kaydediliyor.
-          </p>
         </div>
       </div>
 

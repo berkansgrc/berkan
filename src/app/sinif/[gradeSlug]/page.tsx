@@ -60,6 +60,7 @@ export default async function GradePage({ params }: { params: Promise<{ gradeSlu
   let contents: any[] = [];
 
   if (course) {
+    // Topics'i çek
     const { data: fetchedTopics } = await supabase
       .from("topics")
       .select("*")
@@ -70,19 +71,17 @@ export default async function GradePage({ params }: { params: Promise<{ gradeSlu
     const topicIds = topics.map((t) => t.id);
 
     if (topicIds.length > 0) {
-      const { data } = await supabase
+      const { data: fetchedContents } = await supabase
         .from("contents")
         .select("*")
         .in("topic_id", topicIds)
         .eq("is_published", true)
         .order("sort_order");
-      
-      const fetchedContents = data ?? [];
-      
+
       // Konuların sort_order'ına hızlı erişim için bir map (sözlük) oluşturalım
       const topicSortMap = new Map(topics.map(t => [t.id, t.sort_order ?? 0]));
 
-      contents = fetchedContents.sort((a, b) => {
+      contents = (fetchedContents ?? []).sort((a, b) => {
         const orderA = topicSortMap.get(a.topic_id) ?? 0;
         const orderB = topicSortMap.get(b.topic_id) ?? 0;
         

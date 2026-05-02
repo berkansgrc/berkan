@@ -11,11 +11,13 @@ import {
   Category,
   Eye,
   Copy,
+  Chart,
 } from "iconsax-react";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import DeleteExamButton from "@/components/admin/DeleteExamButton";
 import QuickPreviewDrawer from "@/components/admin/QuickPreviewDrawer";
+import ExamDetailModal from "@/components/admin/ExamDetailModal";
 
 interface Exam {
   id: string;
@@ -34,6 +36,7 @@ interface Exam {
     achievement?: string | null;
   }[];
   _resultCount?: number;
+  _avgScore?: number;
 }
 
 interface ExamListClientProps {
@@ -42,6 +45,7 @@ interface ExamListClientProps {
 
 export default function ExamListClient({ exams }: ExamListClientProps) {
   const [previewExam, setPreviewExam] = useState<Exam | null>(null);
+  const [detailExam, setDetailExam] = useState<Exam | null>(null);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -151,6 +155,20 @@ export default function ExamListClient({ exams }: ExamListClientProps) {
                   </span>
                 )}
               </div>
+
+              {/* İstatistikler */}
+              <div className="flex items-center gap-3 mb-6">
+                <button
+                  onClick={() => setDetailExam(exam)}
+                  className="flex flex-1 items-center justify-center gap-2 bg-primary/5 hover:bg-primary/10 text-primary px-4 py-2 rounded-xl border border-primary/20 transition-colors font-bold text-sm"
+                  title="Detaylı Analizi Gör"
+                >
+                  <Chart className="w-4 h-4" variant="Outline" />
+                  <span>{exam._resultCount || 0} Katılımcı</span>
+                  <span className="w-1 h-1 rounded-full bg-primary/40 mx-1"></span>
+                  <span>{exam._avgScore || 0} Ort. Puan</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-border/50 mt-auto gap-2">
@@ -197,6 +215,13 @@ export default function ExamListClient({ exams }: ExamListClientProps) {
       <QuickPreviewDrawer
         exam={previewExam}
         onClose={() => setPreviewExam(null)}
+      />
+
+      {/* Detail Modal */}
+      <ExamDetailModal
+        examId={detailExam?.id || null}
+        examTitle={detailExam?.title || ""}
+        onClose={() => setDetailExam(null)}
       />
     </>
   );

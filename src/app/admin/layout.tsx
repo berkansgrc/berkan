@@ -1,23 +1,19 @@
-import { createClient } from "@/utils/supabase/server";
+import { getCachedUser, getCachedProfile } from "@/utils/supabase/queries";
 import { redirect } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import CommandPalette from "@/components/admin/CommandPalette";
+import AdminMobileHeader from "@/components/admin/AdminMobileHeader";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  // Cache'li auth — Navbar ile aynı istek, sıfır ekstra DB çağrısı
+  const user = await getCachedUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, full_name")
-    .eq("id", user.id)
-    .single();
+  const profile = await getCachedProfile(user.id);
 
   if (!profile || profile.role !== "admin") {
     redirect("/dashboard");
@@ -37,8 +33,11 @@ export default async function AdminLayout({
       {/* Command Palette — erişilebilir Cmd+K kısayolu */}
       <CommandPalette />
 
+      {/* Mobil Header (Sadece mobilde görünür) */}
+      <AdminMobileHeader />
+
       {/* Main Content */}
-      <main className="flex-1 relative z-10 overflow-auto lg:ml-72 w-full">
+      <main className="flex-1 relative z-10 overflow-auto lg:ml-72 w-full pt-20 lg:pt-0">
         {children}
       </main>
     </div>

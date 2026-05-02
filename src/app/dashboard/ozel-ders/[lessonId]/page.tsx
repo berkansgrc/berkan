@@ -8,12 +8,11 @@ export const metadata = {
   description: "Canlı ders öncesi hazırlık ve not alanı.",
 };
 
-export default async function OzelDersLobbyPage({ params }: { params: { lessonId: string } }) {
+export default async function OzelDersLobbyPage({ params }: { params: Promise<{ lessonId: string }> }) {
+  const { lessonId } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-
-  const { lessonId } = await params;
 
   // Dersi çek
   const { data: lesson, error } = await supabase

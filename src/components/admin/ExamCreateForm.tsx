@@ -16,6 +16,7 @@ export type QuestionDraft = {
   correctOption: string;
   imageUrl: string;
   achievement: string;
+  difficulty: "easy" | "medium" | "hard";
 };
 
 export type ExamDraft = {
@@ -39,6 +40,7 @@ function createEmptyQuestion(count: 4 | 5 = 4): QuestionDraft {
     correctOption: "A",
     imageUrl: "",
     achievement: "",
+    difficulty: "medium",
   };
 }
 
@@ -161,6 +163,7 @@ export default function ExamCreateForm({ initialData }: { initialData?: ExamDraf
             order_index: i + 1,
             image_url: q.imageUrl || null,
             achievement: q.achievement || null,
+            difficulty: q.difficulty,
           })),
         }),
       });
@@ -407,6 +410,17 @@ export default function ExamCreateForm({ initialData }: { initialData?: ExamDraf
                                 placeholder="Örn: İkinci dereceden denklemleri çözer..."
                                 className="h-12 bg-input/40 backdrop-blur-sm border-border/80 hover:border-primary/40 focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-[1.25rem] text-base transition-all"
                             />
+                        </div>
+
+                        <div className="space-y-3">
+                            <Label className="font-semibold text-foreground flex items-center gap-2">
+                                Zorluk Derecesi
+                            </Label>
+                            <div className="flex gap-2">
+                                <button type="button" onClick={() => updateQuestion(q.id, "difficulty", "easy")} className={`flex-1 rounded-[1.25rem] border h-12 flex items-center justify-center font-heading font-bold text-sm transition-all ${q.difficulty === "easy" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/50" : "bg-input/40 border-border/80 text-muted-foreground hover:bg-input hover:text-foreground"}`}>Kolay</button>
+                                <button type="button" onClick={() => updateQuestion(q.id, "difficulty", "medium")} className={`flex-1 rounded-[1.25rem] border h-12 flex items-center justify-center font-heading font-bold text-sm transition-all ${q.difficulty === "medium" ? "bg-amber-500/10 text-amber-600 border-amber-500/50" : "bg-input/40 border-border/80 text-muted-foreground hover:bg-input hover:text-foreground"}`}>Orta</button>
+                                <button type="button" onClick={() => updateQuestion(q.id, "difficulty", "hard")} className={`flex-1 rounded-[1.25rem] border h-12 flex items-center justify-center font-heading font-bold text-sm transition-all ${q.difficulty === "hard" ? "bg-red-500/10 text-red-600 border-red-500/50" : "bg-input/40 border-border/80 text-muted-foreground hover:bg-input hover:text-foreground"}`}>Zor</button>
+                            </div>
                         </div>
 
                         <div className="space-y-3">

@@ -11,75 +11,145 @@ export function MobileTabBar({ user }: { user: SupabaseUser | null }) {
   const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // Panel yolunu belirle
   const panelHref = user ? "/dashboard" : "/login";
+
+  // Admin sayfalarında global tabbar'ı gizle
+  if (pathname.startsWith("/admin")) return null;
+
+  const tabs = [
+    {
+      id: "home",
+      href: "/",
+      label: "Ana Sayfa",
+      icon: Home2,
+      active: pathname === "/",
+    },
+    {
+      id: "siniflar",
+      href: null,
+      label: "Sınıflar",
+      icon: Layer,
+      active: isDrawerOpen,
+    },
+    {
+      id: "exams",
+      href: "/exams",
+      label: "Sınavlar",
+      icon: DocumentText,
+      active: pathname === "/exams",
+    },
+    {
+      id: "canli",
+      href: "/canli-ders",
+      label: "Canlı",
+      icon: Radio,
+      active: pathname === "/canli-ders",
+      isLive: true,
+    },
+    {
+      id: "user",
+      href: panelHref,
+      label: user ? "Panel" : "Giriş",
+      icon: User,
+      active: pathname.startsWith("/dashboard"),
+    },
+  ];
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden bg-background/90 backdrop-blur-2xl border-t border-border/50 pb-2 pt-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        <div className="flex items-center justify-around h-14 px-2">
-          {/* Ana Sayfa */}
-          <Link
-            href="/"
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-              pathname === "/" ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Home2 size={24} variant={pathname === "/" ? "Bold" : "Outline"} />
-            <span className="text-[10px] font-bold">Ana Sayfa</span>
-          </Link>
+      {/* Tab Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden">
+        {/* Glassmorphism arka plan */}
+        <div className="bg-background/85 backdrop-blur-2xl border-t border-border/40 shadow-[0_-8px_32px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom)] pt-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const content = (
+                <span className="relative flex flex-col items-center justify-center w-full gap-0.5 py-2">
+                  {/* Aktif ikon — micro lift */}
+                  <span
+                    className={`relative transition-all duration-200 ${
+                      tab.active ? "-translate-y-0.5 scale-110" : "scale-100"
+                    }`}
+                  >
+                    {/* Canlı ders badge */}
+                    {tab.isLive && !tab.active && (
+                      <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 z-10">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                      </span>
+                    )}
+                    <Icon
+                      size={24}
+                      variant={tab.active ? "Bold" : "Outline"}
+                      color={
+                        tab.isLive
+                          ? tab.active
+                            ? "#ef4444"
+                            : "currentColor"
+                          : "currentColor"
+                      }
+                    />
+                  </span>
 
-          {/* Sınıflar (Opens Drawer) */}
-          <button
-            onClick={() => setIsDrawerOpen(true)}
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-              isDrawerOpen ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Layer size={24} variant={isDrawerOpen ? "Bold" : "Outline"} />
-            <span className="text-[10px] font-bold">Sınıflar</span>
-          </button>
+                  {/* Label */}
+                  <span
+                    className={`text-[10px] font-bold tracking-tight transition-all duration-200 ${
+                      tab.active
+                        ? tab.isLive
+                          ? "text-red-500"
+                          : "text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {tab.label}
+                  </span>
 
-          {/* Sınavlar */}
-          <Link
-            href="/exams"
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-              pathname === "/exams" ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <DocumentText size={24} variant={pathname === "/exams" ? "Bold" : "Outline"} />
-            <span className="text-[10px] font-bold">Sınavlar</span>
-          </Link>
-
-          {/* Canlı Ders */}
-          <Link
-            href="/canli-ders"
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-              pathname === "/canli-ders" ? "text-red-500" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <span className="relative">
-              {pathname !== "/canli-ders" && (
-                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                  {/* Aktif dot indicator */}
+                  {tab.active && (
+                    <span
+                      className={`absolute bottom-0.5 w-1 h-1 rounded-full ${
+                        tab.isLive ? "bg-red-500" : "bg-primary"
+                      }`}
+                    />
+                  )}
                 </span>
-              )}
-              <Radio size={24} variant={pathname === "/canli-ders" ? "Bold" : "Outline"} />
-            </span>
-            <span className="text-[10px] font-bold">Canlı</span>
-          </Link>
+              );
 
-          {/* Panel / Giriş */}
-          <Link
-            href={panelHref}
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-              pathname.startsWith("/dashboard") ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <User size={24} variant={pathname.startsWith("/dashboard") ? "Bold" : "Outline"} />
-            <span className="text-[10px] font-bold">{user ? "Panel" : "Giriş"}</span>
-          </Link>
+              // Drawer trigger (Sınıflar)
+              if (!tab.href) {
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setIsDrawerOpen(true)}
+                    className={`flex-1 transition-colors ${
+                      tab.active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {content}
+                  </button>
+                );
+              }
+
+              return (
+                <Link
+                  key={tab.id}
+                  href={tab.href}
+                  className={`flex-1 transition-colors ${
+                    tab.isLive
+                      ? tab.active
+                        ? "text-red-500"
+                        : "text-muted-foreground hover:text-red-400"
+                      : tab.active
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {content}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
 

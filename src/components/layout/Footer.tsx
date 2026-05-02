@@ -35,8 +35,7 @@ export function Footer() {
             <div className="space-y-4">
               <p className="text-foreground/50">Topluluk</p>
               <ul className="space-y-3">
-                <li><Link className="hover:text-primary transition-colors" href="#">Blog</Link></li>
-                <li><Link className="hover:text-primary transition-colors" href="#">Forum</Link></li>
+                <li><Link className="hover:text-primary transition-colors" href="/blog">Blog</Link></li>
               </ul>
             </div>
             <div className="space-y-4">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronDown, CheckCircle2, XCircle, MinusCircle, Clock, Download } from "lucide-react";
+import { ChevronDown, CheckCircle2, XCircle, MinusCircle, Clock, Download, Award } from "lucide-react";
 import { generateResultPDF } from "@/lib/pdf";
 import { Button } from "@/components/ui/button";
 import { m, AnimatePresence } from "framer-motion";
@@ -15,6 +15,7 @@ type QuestionResult = {
   isCorrect: boolean;
   timeSpentMs?: number;
   achievement?: string | null;
+  difficulty?: "easy" | "medium" | "hard" | null;
 };
 
 type Props = {
@@ -83,6 +84,21 @@ export default function ResultAnalysisClient({
     return true;
   });
 
+  const difficultyStats = {
+    easy: { correct: 0, total: 0, label: "Kolay", color: "bg-emerald-500" },
+    medium: { correct: 0, total: 0, label: "Orta", color: "bg-amber-500" },
+    hard: { correct: 0, total: 0, label: "Zor", color: "bg-red-500" },
+  };
+
+  questionsWithTime.forEach((q) => {
+    if (q.difficulty && difficultyStats[q.difficulty]) {
+      difficultyStats[q.difficulty].total++;
+      if (q.isCorrect) difficultyStats[q.difficulty].correct++;
+    }
+  });
+
+  const hasDifficultyStats = difficultyStats.easy.total > 0 || difficultyStats.medium.total > 0 || difficultyStats.hard.total > 0;
+
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
@@ -120,6 +136,38 @@ export default function ResultAnalysisClient({
         </div>
       )}
 
+      {/* Zorluk Derecesine Göre Başarı */}
+      {hasDifficultyStats && (
+        <div className="rounded-[1.5rem] border bg-card p-6 space-y-4">
+          <h3 className="font-heading font-extrabold text-lg text-foreground flex items-center gap-2">
+            <Award className="w-5 h-5 text-primary" />
+            Zorluk Derecesine Göre Başarı
+          </h3>
+          <div className="space-y-3">
+            {(Object.keys(difficultyStats) as Array<"easy" | "medium" | "hard">).map((level) => {
+              const stat = difficultyStats[level];
+              if (stat.total === 0) return null;
+              const rate = Math.round((stat.correct / stat.total) * 100);
+              return (
+                <div key={level} className="flex items-center gap-3">
+                  <span className="text-sm font-bold w-16">{stat.label}</span>
+                  <div className="flex-1 bg-muted/40 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className={`h-full ${stat.color} rounded-full transition-all duration-700`}
+                      style={{ width: `${rate}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-black w-14 text-right">%{rate}</span>
+                  <span className="text-xs font-medium text-muted-foreground w-12 text-right">
+                    {stat.correct}/{stat.total}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Question List Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h3 className="font-heading font-extrabold text-xl text-foreground">Soru Analizi</h3>
@@ -151,6 +199,8 @@ export default function ResultAnalysisClient({
           const timeSec = timeSpentSec % 60;
           const timeStr = timeMin > 0 ? `${timeMin}dk ${timeSec}sn` : `${timeSec}sn`;
           const isSlowTime = timeSpentSec > 120;
+          const isFastTime = timeSpentSec > 0 && timeSpentSec <= 30;
+          const timeColor = isSlowTime ? "text-red-500" : isFastTime ? "text-emerald-500" : "text-muted-foreground";
 
           return (
             <m.div
@@ -179,7 +229,7 @@ export default function ResultAnalysisClient({
                 <p className="flex-1 text-sm font-medium text-foreground line-clamp-1">{q.body}</p>
                 <div className="flex items-center gap-3 shrink-0">
                   {q.timeSpentMs !== undefined && (
-                    <span className={`flex items-center gap-1 text-xs font-bold ${isSlowTime ? "text-orange-500" : "text-muted-foreground"}`}>
+                    <span className={`flex items-center gap-1 text-xs font-bold ${timeColor}`}>
                       <Clock className="w-3 h-3" />
                       {timeStr}
                     </span>
@@ -209,6 +259,15 @@ export default function ResultAnalysisClient({
                         {q.achievement && (
                           <span className="flex items-center gap-1.5 bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/20 text-primary">
                             {q.achievement}
+                          </span>
+                        )}
+                        {q.difficulty && (
+                          <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold ${
+                            q.difficulty === "easy" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
+                            q.difficulty === "medium" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+                            "bg-red-500/10 text-red-600 border-red-500/20"
+                          }`}>
+                            {q.difficulty === "easy" ? "Kolay" : q.difficulty === "medium" ? "Orta" : "Zor"}
                           </span>
                         )}
                       </div>

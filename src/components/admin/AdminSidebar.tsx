@@ -37,6 +37,12 @@ const navItems = [
     icon: Book,
   },
   {
+    label: "Blog Yönetimi",
+    href: "/admin/blog",
+    icon: Book,
+  },
+
+  {
     label: "Canlı Ders",
     href: "/admin/canli-ders",
     icon: Radio,
